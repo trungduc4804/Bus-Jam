@@ -6,44 +6,53 @@ public class XeBus : MonoBehaviour
     public LoaiMau mauCuaXe; 
     public int soGhe = 3;    
     
-    private int soGheTrong; // Biến đếm số chỗ còn lại
-    private bool dangKhoiHanh = false; // Trạng thái chạy của xe
+    private int soGheTrong; 
+    private bool dangKhoiHanh = false; 
+    
+    // Thêm các biến để quản lý việc chạy vào bến
+    private bool dangVaoBen = false;
+    private Vector3 diemDungTrongBen;
     public float tocDoChay = 10f;
 
     private void Start()
     {
-        // Khi game bắt đầu, số ghế trống bằng đúng sức chứa của xe
         soGheTrong = soGhe;
     }
 
     void Update()
     {
-        // Nếu xe đã đầy khách, cho xe chạy thẳng về phía trước
-        if (dangKhoiHanh)
+        // 1. Trạng thái chạy vào bến
+        if (dangVaoBen)
         {
-            // Vector3.forward tương đương với trục Z (mũi tên màu xanh dương trên Unity)
+            transform.position = Vector3.MoveTowards(transform.position, diemDungTrongBen, tocDoChay * Time.deltaTime);
+            if (Vector3.Distance(transform.position, diemDungTrongBen) < 0.01f)
+            {
+                dangVaoBen = false; // Đã đỗ đúng vị trí, dừng lại để đón khách
+            }
+        }
+        // 2. Trạng thái khởi hành rời đi
+        else if (dangKhoiHanh)
+        {
             transform.Translate(Vector3.forward * tocDoChay * Time.deltaTime);
         }
     }
 
-    // Hàm này được gọi khi có 1 khách bước lên xe
+    // Hàm nhận lệnh từ BenXe để chạy vào điểm đỗ
+    public void TienVaoBen(Vector3 diemDung)
+    {
+        diemDungTrongBen = diemDung;
+        dangVaoBen = true;
+    }
+
     public bool ThemKhach()
     {
-        soGheTrong--; // Trừ đi 1 ghế trống
-        Debug.Log($"Xe {mauCuaXe} vừa đón 1 khách. Còn lại {soGheTrong} chỗ.");
-
-        // Kiểm tra xem xe đã đầy chưa
+        soGheTrong--; 
         if (soGheTrong <= 0)
         {
-            Debug.Log($"Xe {mauCuaXe} ĐÃ ĐẦY! Khởi hành thôi!");
-            dangKhoiHanh = true; // Cho phép nổ máy chạy
-            
-            // Hủy object xe sau 3 giây để giải phóng bộ nhớ (tránh xe chạy mãi ra ngoài vũ trụ)
+            dangKhoiHanh = true; 
             Destroy(gameObject, 3f); 
-            
-            return true; // Trả về true báo hiệu xe đã đầy
+            return true; 
         }
-        
-        return false; // Trả về false báo hiệu xe vẫn còn chỗ đón thêm
+        return false; 
     }
 }
