@@ -18,12 +18,15 @@ public class BenXe : MonoBehaviour
     }
 
     // Kiểm tra nhân vật có cùng màu với xe bus và còn ghế không
-    public bool KtraVaLenXe(NhanVat nv)
+    public bool KtraVaLenXe(NhanVat khachhang)
     {
-        if (xeBusHienTai != null && xeBusHienTai.ConGhe() && nv.mauNV == xeBusHienTai.maucuaxe)
+        if (xeBusHienTai != null && khachhang.mauNV == xeBusHienTai.mauCuaXe)
         {
-            xeBusHienTai.GiamSoGhe();
-            Destroy(nv.gameObject);
+            Destroy(khachhang.gameObject);
+            bool xeDaDay = xeBusHienTai.ThemKhach();
+            if(xeDaDay){
+                xeBusHienTai = null;
+            }
             return true;
         }
         return false;
