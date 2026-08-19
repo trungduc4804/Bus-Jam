@@ -2,46 +2,110 @@ using UnityEngine;
 
 public class TouchManager : MonoBehaviour
 {
+    public static TouchManager Instance { get; private set; }
+
     [Header("Kéo các Slot_0, Slot_1, Slot_2 vào đây")]
     public Transform[] danhSachSlot; // Mảng chứa các vị trí đứng
-    
-    // Biến đếm xem đã có bao nhiêu người đi vào hàng chờ
-    private int soNguoiTrongHang = 0;
+
+    // Mảng lưu trữ nhân vật đang ở từng slot
+    private NhanVat[] nhanVatTrongSlot;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    private void Start()
+    {
+        if (danhSachSlot != null && danhSachSlot.Length > 0)
+        {
+            nhanVatTrongSlot = new NhanVat[danhSachSlot.Length];
+        }
+    }
 
     void Update()
     {
         if (Input.GetMouseButtonDown(0))
         {
+            if (Camera.main == null) return;
+
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
             if (Physics.Raycast(ray, out hit))
             {
-                MoveToTarget nvBiCham = hit.collider.GetComponent<MoveToTarget>(); 
-                
+                NhanVat nvBiCham = hit.collider.GetComponent<NhanVat>();
+
                 if (nvBiCham != null)
                 {
-                    // 1. Kiểm tra xem hàng chờ còn chỗ trống không?
-                    if (soNguoiTrongHang < danhSachSlot.Length)
-                    {
-                        // 2. Lấy tọa độ của vị trí trống tiếp theo
-                        Vector3 diemDenTiepTheo = danhSachSlot[soNguoiTrongHang].position;
-                        
-                        // 3. Ra lệnh cho nhân vật chạy tới đó
-                        nvBiCham.DiChuyenToi(diemDenTiepTheo);
-                        
-                        // 4. Tắt Collider của nhân vật này để không thể bị click lần thứ 2
-                        nvBiCham.GetComponent<Collider>().enabled = false;
+                    // 1. Tìm vị trí slot trống đầu tiên
+                    int indexSlotTrong = TimSlotTrongDauTien();
 
-                        // 5. Tăng số đếm người trong hàng lên 1 cho lần click sau
-                        soNguoiTrongHang++;
+                    if (indexSlotTrong != -1)
+                    {
+                        // 2. Lưu thông tin nhân vật vào slot
+                        nhanVatTrongSlot[indexSlotTrong] = nvBiCham;
+                        nvBiCham.slotIndexHienTai = indexSlotTrong;
+
+                        // 3. Tắt Collider của nhân vật để tránh bị click lại
+                        Collider col = nvBiCham.GetComponent<Collider>();
+                        if (col != null) col.enabled = false;
+
+                        // 4. Ra lệnh cho nhân vật di chuyển tới slot
+                        nvBiCham.DiChuyenToi(danhSachSlot[indexSlotTrong].position);
                     }
                     else
                     {
-                        // Nếu hàng chờ đã đầy (soNguoiTrongHang >= số lượng Slot)
+                        // Nếu hàng chờ đã đầy không còn slot nào trống
                         Debug.Log("Game Over! Hàng chờ đã kín chỗ!");
                     }
                 }
+            }
+        }
+    }
+
+    // Tìm index của slot trống đầu tiên (trả về -1 nếu đầy)
+    public int TimSlotTrongDauTien()
+    {
+        if (nhanVatTrongSlot == null) return -1;
+
+        for (int i = 0; i < nhanVatTrongSlot.Length; i++)
+        {
+            if (nhanVatTrongSlot[i] == null)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    // Giải phóng slot khi nhân vật lên xe bus thành công
+    public void GiaiPhongSlot(int indexSlot)
+    {
+        if (nhanVatTrongSlot != null && indexSlot >= 0 && indexSlot < nhanVatTrongSlot.Length)
+        {
+            nhanVatTrongSlot[indexSlot] = null;
+        }
+    }
+
+    // Kiểm tra xem có nhân vật nào đang đứng chờ trong slot có thể lên xe không
+    public void KiemTraNguoiTrongHangChoLenXe()
+    {
+        if (nhanVatTrongSlot == null) return;
+
+        for (int i = 0; i < nhanVatTrongSlot.Length; i++)
+        {
+            NhanVat nv = nhanVatTrongSlot[i];
+            if (nv != null && !nv.DangDiChuyen)
+            {
+                nv.ThuyLenXeBus();
             }
         }
     }

@@ -1,21 +1,26 @@
 using UnityEngine;
 
-
-public enum TypeCar {
+public enum LoaiMau {
     Do,
     Xanh,
     Vang, 
     Tim
 }
 
-public class MoveToTarget : MonoBehaviour
+public class NhanVat : MonoBehaviour
 {
-    public TypeCar typeCar;
-    private Vector3 diemDen;
-    private bool dangDiChuyen = false;
+    public LoaiMau mauNV;
     public float tocDo = 5f; // Tốc độ chạy của nhân vật
 
-    void Update()
+    [HideInInspector]
+    public int slotIndexHienTai = -1;
+
+    private Vector3 diemDen;
+    private bool dangDiChuyen = false;
+
+    public bool DangDiChuyen => dangDiChuyen;
+
+    private void Update()
     {
         // Nếu biến dangDiChuyen là true, nhân vật sẽ liên tục nhích về phía đích
         if (dangDiChuyen)
@@ -27,6 +32,27 @@ public class MoveToTarget : MonoBehaviour
             if (Vector3.Distance(transform.position, diemDen) < 0.01f)
             {
                 dangDiChuyen = false;
+                
+                // Thử lên xe bus khi tới slot
+                ThuyLenXeBus();
+            }
+        }
+    }
+
+    public void ThuyLenXeBus()
+    {
+        if (BenXe.Instance != null)
+        {
+            bool lenXeThanhCong = BenXe.Instance.KtraVaLenXe(this);
+            if (lenXeThanhCong)
+            {
+                // Giải phóng slot trong TouchManager
+                if (TouchManager.Instance != null && slotIndexHienTai != -1)
+                {
+                    TouchManager.Instance.GiaiPhongSlot(slotIndexHienTai);
+                    // Kiểm tra xem những người khác trong hàng chờ có thể lên xe tiếp không
+                    TouchManager.Instance.KiemTraNguoiTrongHangChoLenXe();
+                }
             }
         }
     }
@@ -38,5 +64,3 @@ public class MoveToTarget : MonoBehaviour
         dangDiChuyen = true; // Bắt đầu cho phép di chuyển trong hàm Update
     }
 }
-
-
