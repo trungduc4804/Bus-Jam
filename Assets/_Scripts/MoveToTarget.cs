@@ -1,7 +1,16 @@
 using UnityEngine;
 
+
+public enum TypeCar {
+    Do,
+    Xanh,
+    Vang, 
+    Tim
+}
+
 public class MoveToTarget : MonoBehaviour
 {
+    public TypeCar typeCar;
     private Vector3 diemDen;
     private bool dangDiChuyen = false;
     public float tocDo = 5f; // Tốc độ chạy của nhân vật
@@ -29,3 +38,5 @@ public class MoveToTarget : MonoBehaviour
         dangDiChuyen = true; // Bắt đầu cho phép di chuyển trong hàm Update
     }
 }
+
+
