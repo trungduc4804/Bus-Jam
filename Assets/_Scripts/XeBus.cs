@@ -9,12 +9,14 @@ public class XeBus : MonoBehaviour
     private int soGheTrong; 
     private bool dangKhoiHanh = false; 
     
-    // Thêm các biến để quản lý việc chạy vào bến
+    // Quản lý việc chạy vào bến
     private bool dangVaoBen = false;
     private Vector3 diemDungTrongBen;
     public float tocDoChay = 10f;
 
-    private void Start()
+    public bool DangDungTrongBen => !dangVaoBen && !dangKhoiHanh; // Xe đã đỗ xong trong bến và chưa khởi hành
+
+    private void Awake()
     {
         soGheTrong = soGhe;
     }
@@ -27,7 +29,12 @@ public class XeBus : MonoBehaviour
             transform.position = Vector3.MoveTowards(transform.position, diemDungTrongBen, tocDoChay * Time.deltaTime);
             if (Vector3.Distance(transform.position, diemDungTrongBen) < 0.01f)
             {
+                transform.position = diemDungTrongBen;
                 dangVaoBen = false; // Đã đỗ đúng vị trí, dừng lại để đón khách
+                if (BenXe.Instance != null)
+                {
+                    BenXe.Instance.QuetKhachDangCho();
+                }
             }
         }
         // 2. Trạng thái khởi hành rời đi

@@ -1,4 +1,4 @@
-using System.Collections.Generic; // Thư viện để dùng List
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BenXe : MonoBehaviour
@@ -6,11 +6,13 @@ public class BenXe : MonoBehaviour
     public static BenXe Instance { get; private set; }
 
     [Header("Quản lý bến xe")]
-    public Transform viTriDoXe; // Chỗ đỗ xe cố định trong bến
-    public List<XeBus> danhSachXeChuanBi = new List<XeBus>(); // Danh sách xe xếp hàng chờ
+    public Transform viTriDoXe;
+    public List<XeBus> danhSachXeChuanBi = new List<XeBus>();
     
-    // Không cần gán tay trên Inspector nữa, code sẽ tự lấy từ List
-    private XeBus xeBusHienTai; 
+    // Danh sách lưu những khách ra hàng đợi nhưng sai màu xe
+    public List<NhanVat> danhSachKhachDangCho = new List<NhanVat>();
+
+    public XeBus xeBusHienTai; 
 
     private void Awake()
     {
@@ -20,38 +22,86 @@ public class BenXe : MonoBehaviour
 
     private void Start()
     {
-        GoiXeTiepTheo(); // Vừa vào game là gọi ngay chiếc xe đầu tiên vào bến
+        GoiXeTiepTheo();
     }
 
-    // Hàm gọi chiếc xe đầu hàng tiến vào
     public void GoiXeTiepTheo()
     {
         if (danhSachXeChuanBi.Count > 0)
         {
-            xeBusHienTai = danhSachXeChuanBi[0]; // Lấy chiếc xe đầu tiên (Index 0)
-            danhSachXeChuanBi.RemoveAt(0); // Xóa xe đó khỏi danh sách chờ
-            xeBusHienTai.TienVaoBen(viTriDoXe.position); // Gọi nó tiến vào vị trí đỗ
+            xeBusHienTai = danhSachXeChuanBi[0];
+            danhSachXeChuanBi.RemoveAt(0);
+            if (xeBusHienTai != null && viTriDoXe != null)
+            {
+                xeBusHienTai.TienVaoBen(viTriDoXe.position); 
+            }
         }
         else
         {
-            Debug.Log("Tuyệt vời! Đã hết xe, tất cả khách đều đã lên đường!");
+            xeBusHienTai = null;
+        }
+    }
+
+    // Tách riêng logic cho lên xe ra một hàm để tái sử dụng
+    private void ChoPhepLenXe(NhanVat khachHang)
+    {
+        // Xóa khách khỏi danh sách chờ nếu họ đang ở trong đó
+        if (danhSachKhachDangCho.Contains(khachHang))
+        {
+            danhSachKhachDangCho.Remove(khachHang);
+        }
+
+        // GIẢI PHÓNG SLOT TRONG TOUCHMANAGER KHI KHÁCH LÊN XE
+        if (TouchManager.Instance != null && khachHang.slotIndexHienTai != -1)
+        {
+            TouchManager.Instance.GiaiPhongSlot(khachHang.slotIndexHienTai);
+        }
+
+        Destroy(khachHang.gameObject); 
+        bool xeDaDay = xeBusHienTai.ThemKhach();
+
+        if (xeDaDay)
+        {
+            xeBusHienTai = null; 
+            GoiXeTiepTheo(); 
         }
     }
 
     public bool KtraVaLenXe(NhanVat khachHang)
     {
-        if (xeBusHienTai != null && khachHang.mauNV == xeBusHienTai.mauCuaXe)
+        // Chỉ cho phép lên xe nếu xe hiện tại ĐÃ ĐỖ XONG TRONG BẾN (DangDungTrongBen)
+        if (xeBusHienTai != null && xeBusHienTai.DangDungTrongBen && khachHang.mauNV == xeBusHienTai.mauCuaXe)
         {
-            Destroy(khachHang.gameObject); 
-            bool xeDaDay = xeBusHienTai.ThemKhach();
-
-            if (xeDaDay)
-            {
-                xeBusHienTai = null; 
-                GoiXeTiepTheo(); // Xe trước vừa đi thì gọi ngay xe sau vào
-            }
+            ChoPhepLenXe(khachHang);
             return true;
         }
-        return false;
+        else
+        {
+            // Sai màu hoặc xe chưa tới đỗ xong -> Thêm vào danh sách chờ
+            if (!danhSachKhachDangCho.Contains(khachHang))
+            {
+                danhSachKhachDangCho.Add(khachHang);
+            }
+            return false;
+        }
+    }
+
+    // Hàm này được gọi từ XeBus.cs khi xe mới vừa đỗ xong
+    public void QuetKhachDangCho()
+    {
+        // Phải lặp ngược danh sách (từ cuối lên đầu) khi có thao tác Xóa (Remove) phần tử
+        for (int i = danhSachKhachDangCho.Count - 1; i >= 0; i--)
+        {
+            // Nếu xe hiện tại đã hết hoặc đang di chuyển thì dừng quét
+            if (xeBusHienTai == null || !xeBusHienTai.DangDungTrongBen) break;
+
+            NhanVat khach = danhSachKhachDangCho[i];
+            
+            // Nếu phát hiện khách hợp màu với xe mới đến
+            if (khach != null && khach.mauNV == xeBusHienTai.mauCuaXe)
+            {
+                ChoPhepLenXe(khach);
+            }
+        }
     }
 }

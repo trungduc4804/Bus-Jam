@@ -31,26 +31,25 @@ public class NhanVat : MonoBehaviour
             // Nếu khoảng cách đến đích rất nhỏ (gần như đã tới nơi), thì dừng lại
             if (Vector3.Distance(transform.position, diemDen) < 0.01f)
             {
+                transform.position = diemDen;
                 dangDiChuyen = false;
                 
                 // Thử lên xe bus khi tới slot
-                ThuyLenXeBus();
+                ThuLenXeBus();
             }
         }
     }
 
-    public void ThuyLenXeBus()
+    public void ThuLenXeBus()
     {
         if (BenXe.Instance != null)
         {
             bool lenXeThanhCong = BenXe.Instance.KtraVaLenXe(this);
             if (lenXeThanhCong)
             {
-                // Giải phóng slot trong TouchManager
-                if (TouchManager.Instance != null && slotIndexHienTai != -1)
+                // Kiểm tra xem những người khác trong hàng chờ có thể lên xe tiếp không
+                if (TouchManager.Instance != null)
                 {
-                    TouchManager.Instance.GiaiPhongSlot(slotIndexHienTai);
-                    // Kiểm tra xem những người khác trong hàng chờ có thể lên xe tiếp không
                     TouchManager.Instance.KiemTraNguoiTrongHangChoLenXe();
                 }
             }

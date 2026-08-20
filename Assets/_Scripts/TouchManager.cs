@@ -105,7 +105,7 @@ public class TouchManager : MonoBehaviour
             NhanVat nv = nhanVatTrongSlot[i];
             if (nv != null && !nv.DangDiChuyen)
             {
-                nv.ThuyLenXeBus();
+                nv.ThuLenXeBus();
             }
         }
     }
