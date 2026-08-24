@@ -73,6 +73,7 @@ public class TouchManager : MonoBehaviour
                     {
                         // Nếu hàng chờ đã đầy không còn slot nào trống
                         Debug.Log("Game Over! Hàng chờ đã kín chỗ!");
+                        GameManager.Instance.LoseGame();
                     }
                 }
             }

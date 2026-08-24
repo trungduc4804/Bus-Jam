@@ -39,6 +39,11 @@ public class BenXe : MonoBehaviour
         else
         {
             xeBusHienTai = null;
+            // Thắng Game! Hết xe mà vẫn còn khách!
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.WinGame();
+            }
         }
     }
 
