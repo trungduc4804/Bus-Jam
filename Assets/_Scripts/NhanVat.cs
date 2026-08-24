@@ -62,4 +62,24 @@ public class NhanVat : MonoBehaviour
         diemDen = viTriMoi; // Ghi nhớ tọa độ đích
         dangDiChuyen = true; // Bắt đầu cho phép di chuyển trong hàm Update
     }
+    // Hàm kiểm tra xem đường đi có bị chặn không
+    public bool KiemTraDuongThoat()
+    {
+        RaycastHit hit;
+        // Bắn một tia dài 1.5 đơn vị từ vị trí nhân vật về hướng mặt trước (trục Z)
+        // Vector3.up * 0.5f để nhấc tia bắn lên cao ngang ngực, tránh bắn chạm đất
+        Vector3 viTriBan = transform.position + (Vector3.up * 0.5f); 
+
+        if (Physics.Raycast(viTriBan, transform.forward, out hit, 1.5f))
+        {
+            // Nếu tia này đụng phải một nhân vật khác
+            if (hit.collider.GetComponent<NhanVat>() != null)
+            {
+                Debug.Log($"Nhân vật {mauNV} bị chặn bởi {hit.collider.gameObject.name}!");
+                return false; // Bị chặn, không được đi
+            }
+        }
+        
+        return true; // Đường thoáng, được phép đi
+    }
 }

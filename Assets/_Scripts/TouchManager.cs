@@ -45,6 +45,11 @@ public class TouchManager : MonoBehaviour
 
                 if (nvBiCham != null)
                 {
+                    if (nvBiCham.KiemTraDuongThoat() == false)
+                    {
+                        // Nếu đường bị chặn, thoát luôn không thực hiện các bước dưới
+                        return; 
+                    }
                     // 1. Tìm vị trí slot trống đầu tiên
                     int indexSlotTrong = TimSlotTrongDauTien();
 
