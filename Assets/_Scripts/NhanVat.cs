@@ -12,6 +12,10 @@ public class NhanVat : MonoBehaviour
     public LoaiMau mauNV;
     public float tocDo = 5f; // Tốc độ chạy của nhân vật
 
+    [Header("Cấu hình kiểm tra đường bị chặn")]
+    public float khoangCachKiemTra = 1.5f; // Khoảng cách quét nhân vật phía trước
+    public float banKinhKiemTra = 0.4f;   // Bán kính quét (SphereCast) để tránh lọt khe
+
     [HideInInspector]
     public int slotIndexHienTai = -1;
 
@@ -62,24 +66,40 @@ public class NhanVat : MonoBehaviour
         diemDen = viTriMoi; // Ghi nhớ tọa độ đích
         dangDiChuyen = true; // Bắt đầu cho phép di chuyển trong hàm Update
     }
-    // Hàm kiểm tra xem đường đi có bị chặn không
+
+    // Hàm kiểm tra xem đường đi có bị chặn bởi nhân vật khác không
     public bool KiemTraDuongThoat()
     {
-        RaycastHit hit;
-        // Bắn một tia dài 1.5 đơn vị từ vị trí nhân vật về hướng mặt trước (trục Z)
-        // Vector3.up * 0.5f để nhấc tia bắn lên cao ngang ngực, tránh bắn chạm đất
+        // Nhấc vị trí gốc bắn tia lên cao 0.5f để không bị đụng mặt đất
         Vector3 viTriBan = transform.position + (Vector3.up * 0.5f); 
+        Vector3 huongBan = transform.forward; // Hướng mặt trước của nhân vật
 
-        if (Physics.Raycast(viTriBan, transform.forward, out hit, 1.5f))
+        // Sử dụng SphereCastAll để lấy TẤT CẢ các vật thể nằm trên luồng quét (tránh bị cản bởi mặt đất hay object khác)
+        RaycastHit[] hits = Physics.SphereCastAll(viTriBan, banKinhKiemTra, huongBan, khoangCachKiemTra);
+
+        foreach (RaycastHit hit in hits)
         {
-            // Nếu tia này đụng phải một nhân vật khác
-            if (hit.collider.GetComponent<NhanVat>() != null)
+            // Bỏ qua chính bản thân nhân vật này
+            if (hit.collider.gameObject == gameObject) continue;
+
+            // Nếu phát hiện 1 nhân vật khác nằm trên hướng đi
+            NhanVat nvKhac = hit.collider.GetComponent<NhanVat>();
+            if (nvKhac != null)
             {
-                Debug.Log($"Nhân vật {mauNV} bị chặn bởi {hit.collider.gameObject.name}!");
+                Debug.Log($"Nhân vật {gameObject.name} ({mauNV}) bị chặn bởi {nvKhac.gameObject.name}!");
                 return false; // Bị chặn, không được đi
             }
         }
         
         return true; // Đường thoáng, được phép đi
+    }
+
+    // Vẽ tia kiểm tra trực quan trong Unity Editor Scene view khi chọn nhân vật
+    private void OnDrawGizmosSelected()
+    {
+        Vector3 viTriBan = transform.position + (Vector3.up * 0.5f);
+        Gizmos.color = KiemTraDuongThoat() ? Color.green : Color.red;
+        Gizmos.DrawRay(viTriBan, transform.forward * khoangCachKiemTra);
+        Gizmos.DrawWireSphere(viTriBan + transform.forward * khoangCachKiemTra, banKinhKiemTra);
     }
 }

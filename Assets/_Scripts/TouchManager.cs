@@ -45,9 +45,12 @@ public class TouchManager : MonoBehaviour
 
                 if (nvBiCham != null)
                 {
+                    // Nếu nhân vật đã ở slot hoặc đang di chuyển thì bỏ qua
+                    if (nvBiCham.slotIndexHienTai != -1 || nvBiCham.DangDiChuyen) return;
+
                     if (nvBiCham.KiemTraDuongThoat() == false)
                     {
-                        // Nếu đường bị chặn, thoát luôn không thực hiện các bước dưới
+                        Debug.Log($"[Bị chặn] Không thể di chuyển nhân vật {nvBiCham.gameObject.name} ra bãi xe vì có người đứng chặn phía trước!");
                         return; 
                     }
                     // 1. Tìm vị trí slot trống đầu tiên
