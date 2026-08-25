@@ -21,7 +21,7 @@ public class BenXe : MonoBehaviour
     }
 
     // Không gọi GoiXeTiepTheo trong Start() nữa vì LevelManager sẽ tự gọi sau khi load map xong
-    public void GoiXeTiepTheo()
+    public void GoiXeTiepTheo(NhanVat khachDangXoa = null)
     {
         if (LevelManager.Instance != null && LevelManager.Instance.ConXeBusTrongQueue())
         {
@@ -34,7 +34,7 @@ public class BenXe : MonoBehaviour
         else
         {
             xeBusHienTai = null;
-            KiemTraKetThucGame();
+            KiemTraKetThucGame(khachDangXoa);
         }
     }
 
@@ -54,16 +54,24 @@ public class BenXe : MonoBehaviour
         }
 
         Destroy(khachHang.gameObject); 
-        bool xeDaDay = xeBusHienTai.ThemKhach();
 
-        if (xeDaDay)
+        if (xeBusHienTai != null)
         {
-            xeBusHienTai = null; 
-            GoiXeTiepTheo(); 
+            bool xeDaDay = xeBusHienTai.ThemKhach();
+            if (xeDaDay)
+            {
+                xeBusHienTai = null; 
+                GoiXeTiepTheo(khachHang); 
+            }
+            else
+            {
+                KiemTraKetThucGame(khachHang);
+            }
         }
-
-        // Kiểm tra xem đã hết tất cả khách để Thắng màn chơi chưa
-        KiemTraKetThucGame(khachHang);
+        else
+        {
+            KiemTraKetThucGame(khachHang);
+        }
     }
 
     public void KiemTraKetThucGame(NhanVat khachDangXoa = null)

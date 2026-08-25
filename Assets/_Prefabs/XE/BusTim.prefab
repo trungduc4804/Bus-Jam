@@ -125,6 +125,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2d06b634cf52a5459779b7243545bbf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::XeBus
-  mauCuaXe: 2
+  mauCuaXe: 3
   soGhe: 3
   tocDoChay: 10
