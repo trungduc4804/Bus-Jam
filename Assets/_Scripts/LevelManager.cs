@@ -3,7 +3,8 @@ using UnityEngine;
 public class LevelManager : MonoBehaviour
 {
     [Header("File Data Màn Chơi")]
-    public LevelData levelHienTai;
+    public LevelData[] danhSachLevel;
+    private int levelIndex = 0;
 
     [Header("Kéo các Prefab từ thư mục vào đây")]
     public GameObject prefabKhachDo;
@@ -21,6 +22,10 @@ public class LevelManager : MonoBehaviour
 
     private void SinhRaBanDo()
     {
+        if(levelIndex >= danhSachLevel.Length){
+            levelIndex = 0;
+        }
+        LevelData levelHienTai = danhSachLevel[levelIndex];
         // Duyệt qua từng dòng chữ trong mảng Ban Do Luoii
         for (int z = 0; z < levelHienTai.banDoLuoii.Length; z++)
         {
