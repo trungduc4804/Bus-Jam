@@ -20,17 +20,12 @@ public class BenXe : MonoBehaviour
         else Destroy(gameObject);
     }
 
-    private void Start()
-    {
-        GoiXeTiepTheo();
-    }
-
+    // Không gọi GoiXeTiepTheo trong Start() nữa vì LevelManager sẽ tự gọi sau khi load map xong
     public void GoiXeTiepTheo()
     {
-        if (danhSachXeChuanBi.Count > 0)
+        if (LevelManager.Instance != null && LevelManager.Instance.ConXeBusTrongQueue())
         {
-            xeBusHienTai = danhSachXeChuanBi[0];
-            danhSachXeChuanBi.RemoveAt(0);
+            xeBusHienTai = LevelManager.Instance.SinhXeBusTiepTheo();
             if (xeBusHienTai != null && viTriDoXe != null)
             {
                 xeBusHienTai.TienVaoBen(viTriDoXe.position); 
@@ -92,7 +87,7 @@ public class BenXe : MonoBehaviour
                 GameManager.Instance.WinGame();
             }
         }
-        else if (xeBusHienTai == null && (danhSachXeChuanBi == null || danhSachXeChuanBi.Count == 0))
+        else if (xeBusHienTai == null && (LevelManager.Instance == null || !LevelManager.Instance.ConXeBusTrongQueue()))
         {
             // Hết xe bus nhưng vẫn còn khách trên sân/hàng chờ -> Thua Game!
             if (GameManager.Instance != null)

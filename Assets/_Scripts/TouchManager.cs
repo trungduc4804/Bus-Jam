@@ -4,7 +4,7 @@ public class TouchManager : MonoBehaviour
 {
     public static TouchManager Instance { get; private set; }
 
-    [Header("Kéo các Slot_0, Slot_1, Slot_2 vào đây")]
+    [Header("Kéo tất cả các ô Slot hàng chờ trong Scene vào đây")]
     public Transform[] danhSachSlot; // Mảng chứa các vị trí đứng
 
     // Mảng lưu trữ nhân vật đang ở từng slot
