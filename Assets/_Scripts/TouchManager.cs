@@ -80,12 +80,24 @@ public class TouchManager : MonoBehaviour
         }
     }
 
+    private int soSlotChoPhep = -1;
+
+    // Cho phép LevelManager tùy chỉnh số slot hàng chờ tối đa của Level
+    public void CapNhatSoSlot(int soSlot)
+    {
+        soSlotChoPhep = soSlot;
+    }
+
     // Tìm index của slot trống đầu tiên (trả về -1 nếu đầy)
     public int TimSlotTrongDauTien()
     {
         if (nhanVatTrongSlot == null) return -1;
 
-        for (int i = 0; i < nhanVatTrongSlot.Length; i++)
+        int maxSlot = (soSlotChoPhep > 0 && soSlotChoPhep <= nhanVatTrongSlot.Length) 
+                      ? soSlotChoPhep 
+                      : nhanVatTrongSlot.Length;
+
+        for (int i = 0; i < maxSlot; i++)
         {
             if (nhanVatTrongSlot[i] == null)
             {

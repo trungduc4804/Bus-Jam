@@ -46,4 +46,8 @@ public class GameManager : MonoBehaviour
         // Load lại chính Scene đang mở hiện tại
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
+    public void NextLevel(){
+        LevelManager.levelIndex++;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
 }

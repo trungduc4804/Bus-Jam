@@ -39,11 +39,7 @@ public class BenXe : MonoBehaviour
         else
         {
             xeBusHienTai = null;
-            // Thắng Game! Hết xe mà vẫn còn khách!
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.WinGame();
-            }
+            KiemTraKetThucGame();
         }
     }
 
@@ -69,6 +65,40 @@ public class BenXe : MonoBehaviour
         {
             xeBusHienTai = null; 
             GoiXeTiepTheo(); 
+        }
+
+        // Kiểm tra xem đã hết tất cả khách để Thắng màn chơi chưa
+        KiemTraKetThucGame(khachHang);
+    }
+
+    public void KiemTraKetThucGame(NhanVat khachDangXoa = null)
+    {
+        NhanVat[] tatCaKhach = Object.FindObjectsOfType<NhanVat>();
+        int soKhachConLai = 0;
+
+        foreach (NhanVat nv in tatCaKhach)
+        {
+            if (nv != null && nv != khachDangXoa)
+            {
+                soKhachConLai++;
+            }
+        }
+
+        if (soKhachConLai == 0)
+        {
+            // Tất cả khách đã lên xe -> Thắng màn chơi!
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.WinGame();
+            }
+        }
+        else if (xeBusHienTai == null && (danhSachXeChuanBi == null || danhSachXeChuanBi.Count == 0))
+        {
+            // Hết xe bus nhưng vẫn còn khách trên sân/hàng chờ -> Thua Game!
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.LoseGame();
+            }
         }
     }
 
