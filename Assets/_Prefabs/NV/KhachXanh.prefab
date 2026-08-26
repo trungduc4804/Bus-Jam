@@ -133,6 +133,7 @@ MonoBehaviour:
   khoangCachKiemTra: 2
   banKinhKiemTra: 0.4
   slotIndexHienTai: -1
+  animator: {fileID: 6366972336271552259}
 --- !u!1001 &663878742119338642
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -201,5 +202,10 @@ PrefabInstance:
 --- !u!4 &1061771233328739705 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 4156215c5e6d2734283fdb349e5032df, type: 3}
+  m_PrefabInstance: {fileID: 663878742119338642}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &6366972336271552259 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 4156215c5e6d2734283fdb349e5032df, type: 3}
   m_PrefabInstance: {fileID: 663878742119338642}
   m_PrefabAsset: {fileID: 0}

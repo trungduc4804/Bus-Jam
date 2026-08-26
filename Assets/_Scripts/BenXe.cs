@@ -20,8 +20,28 @@ public class BenXe : MonoBehaviour
         else Destroy(gameObject);
     }
 
+    // Danh sách theo dõi toàn bộ nhân vật đang còn sống trong game
+    [HideInInspector]
+    public List<NhanVat> danhSachTatCaKhach = new List<NhanVat>();
+
+    public void DangKyNhanVat(NhanVat nv)
+    {
+        if (nv != null && !danhSachTatCaKhach.Contains(nv))
+        {
+            danhSachTatCaKhach.Add(nv);
+        }
+    }
+
+    public void HuyDangKyNhanVat(NhanVat nv)
+    {
+        if (nv != null && danhSachTatCaKhach.Contains(nv))
+        {
+            danhSachTatCaKhach.Remove(nv);
+        }
+    }
+
     // Không gọi GoiXeTiepTheo trong Start() nữa vì LevelManager sẽ tự gọi sau khi load map xong
-    public void GoiXeTiepTheo(NhanVat khachDangXoa = null)
+    public void GoiXeTiepTheo()
     {
         if (LevelManager.Instance != null && LevelManager.Instance.ConXeBusTrongQueue())
         {
@@ -34,7 +54,7 @@ public class BenXe : MonoBehaviour
         else
         {
             xeBusHienTai = null;
-            KiemTraKetThucGame(khachDangXoa);
+            KiemTraKetThucGame();
         }
     }
 
@@ -46,6 +66,8 @@ public class BenXe : MonoBehaviour
         {
             danhSachKhachDangCho.Remove(khachHang);
         }
+
+        HuyDangKyNhanVat(khachHang);
 
         // GIẢI PHÓNG SLOT TRONG TOUCHMANAGER KHI KHÁCH LÊN XE
         if (TouchManager.Instance != null && khachHang.slotIndexHienTai != -1)
@@ -61,31 +83,22 @@ public class BenXe : MonoBehaviour
             if (xeDaDay)
             {
                 xeBusHienTai = null; 
-                GoiXeTiepTheo(khachHang); 
+                GoiXeTiepTheo(); 
             }
             else
             {
-                KiemTraKetThucGame(khachHang);
+                KiemTraKetThucGame();
             }
         }
         else
         {
-            KiemTraKetThucGame(khachHang);
+            KiemTraKetThucGame();
         }
     }
 
-    public void KiemTraKetThucGame(NhanVat khachDangXoa = null)
+    public void KiemTraKetThucGame()
     {
-        NhanVat[] tatCaKhach = Object.FindObjectsOfType<NhanVat>();
-        int soKhachConLai = 0;
-
-        foreach (NhanVat nv in tatCaKhach)
-        {
-            if (nv != null && nv != khachDangXoa)
-            {
-                soKhachConLai++;
-            }
-        }
+        int soKhachConLai = danhSachTatCaKhach.Count;
 
         if (soKhachConLai == 0)
         {

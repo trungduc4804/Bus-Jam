@@ -27,6 +27,8 @@ public class GameManager : MonoBehaviour
         
         if (panelVictory != null) 
             panelVictory.SetActive(true); // Bật bảng Win
+        else
+            Debug.LogWarning("[GameManager] Bạn chưa kéo Panel Victory vào ô Panel Victory trong Inspector của GameManager!");
     }
 
     public void LoseGame()
@@ -38,6 +40,8 @@ public class GameManager : MonoBehaviour
         
         if (panelGameOver != null) 
             panelGameOver.SetActive(true); // Bật bảng Lose
+        else
+            Debug.LogWarning("[GameManager] Bạn chưa kéo Panel Game Over vào ô Panel Game Over trong Inspector của GameManager!");
     }
 
     // Hàm này sẽ được gán vào nút "Replay" trên UI

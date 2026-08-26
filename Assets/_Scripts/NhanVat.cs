@@ -18,17 +18,33 @@ public class NhanVat : MonoBehaviour
 
     [HideInInspector]
     public int slotIndexHienTai = -1;
-
+    public Animator animator;
     private Vector3 diemDen;
     private bool dangDiChuyen = false;
 
     public bool DangDiChuyen => dangDiChuyen;
+    private void Start()
+    {
+        if (BenXe.Instance != null)
+        {
+            BenXe.Instance.DangKyNhanVat(this);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (BenXe.Instance != null)
+        {
+            BenXe.Instance.HuyDangKyNhanVat(this);
+        }
+    }
 
     private void Update()
     {
         // Nếu biến dangDiChuyen là true, nhân vật sẽ liên tục nhích về phía đích
         if (dangDiChuyen)
         {
+            if (animator != null) animator.SetBool("isWalking", true);
             // Vector3.MoveTowards giúp tính toán và di chuyển mượt mà giữa 2 điểm
             transform.position = Vector3.MoveTowards(transform.position, diemDen, tocDo * Time.deltaTime);
             
@@ -37,7 +53,7 @@ public class NhanVat : MonoBehaviour
             {
                 transform.position = diemDen;
                 dangDiChuyen = false;
-                
+                if (animator != null) animator.SetBool("isWalking", false);
                 // Thử lên xe bus khi tới slot
                 ThuLenXeBus();
             }
