@@ -24,7 +24,8 @@ public class LevelManager : MonoBehaviour
 
     [Header("Cài đặt Lưới")]
     public float khoangCachO = 1.2f; // Khoảng cách giữa các nhân vật
-    public Vector3 viTriBatDau = new Vector3(0, 0, 0); // Vị trí ô (0,0)
+    public Vector3 viTriBatDau = new Vector3(0, 0, 0); // Vị trí điểm trung tâm của lưới
+    public bool tuDongCanGiua = true; // Tự động căn giữa lưới theo màn hình
 
     // Hàng chờ lưu danh sách màu xe bus theo thứ tự trong LevelData
     private Queue<LoaiMau> hangChoXeBus = new Queue<LoaiMau>();
@@ -75,10 +76,29 @@ public class LevelManager : MonoBehaviour
             }
         }
 
-        // 3. Sinh ra bản đồ Nhân Vật từ banDoLuoii
-        if (levelHienTai.banDoLuoii != null)
+        // 3. Sinh ra bản đồ Nhân Vật từ banDoLuoii (Tự động căn giữa màn hình)
+        if (levelHienTai.banDoLuoii != null && levelHienTai.banDoLuoii.Length > 0)
         {
-            for (int z = 0; z < levelHienTai.banDoLuoii.Length; z++)
+            int soHang = levelHienTai.banDoLuoii.Length;
+            int maxCot = 0;
+
+            // Tìm số cột lớn nhất để tính chiều rộng lưới
+            foreach (string hang in levelHienTai.banDoLuoii)
+            {
+                if (string.IsNullOrEmpty(hang)) continue;
+                int demCot = 0;
+                foreach (char c in hang)
+                {
+                    if (c != ' ') demCot++;
+                }
+                if (demCot > maxCot) maxCot = demCot;
+            }
+
+            // Tính khoảng lệch (Offset) để căn giữa lưới
+            float offsetX = tuDongCanGiua ? -((maxCot - 1) * khoangCachO) / 2.0f : 0f;
+            float offsetZ = tuDongCanGiua ? ((soHang - 1) * khoangCachO) / 2.0f : 0f;
+
+            for (int z = 0; z < soHang; z++)
             {
                 string hangHienTai = levelHienTai.banDoLuoii[z];
                 if (string.IsNullOrEmpty(hangHienTai)) continue;
@@ -89,9 +109,11 @@ public class LevelManager : MonoBehaviour
                     char c = hangHienTai[i];
                     if (c == ' ') continue; 
 
-                    Vector3 toaDo = viTriBatDau + new Vector3(colIndex * khoangCachO, 0, -z * khoangCachO);
-                    GameObject prefabKhach = GetPrefabKhach(c);
+                    float posX = viTriBatDau.x + offsetX + (colIndex * khoangCachO);
+                    float posZ = viTriBatDau.z + offsetZ - (z * khoangCachO);
+                    Vector3 toaDo = new Vector3(posX, viTriBatDau.y, posZ);
 
+                    GameObject prefabKhach = GetPrefabKhach(c);
                     if (prefabKhach != null)
                     {
                         Instantiate(prefabKhach, toaDo, Quaternion.identity);
