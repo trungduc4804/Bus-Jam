@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2271ec77655f96247b951d4b0b24f758, type: 3}
   m_Name: Level_3
   m_EditorClassIdentifier: Assembly-CSharp::LevelData
-  soSlotHangCho: 5
-  danhSachXeBus: 
-  banDoLuoii: []
+  soSlotHangCho: 4
+  danhSachXeBus: 010000000000000002000000
+  banDoLuoii:
+  - R R R
+  - 'B B B '
+  - Y Y Y
