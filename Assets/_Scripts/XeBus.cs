@@ -13,60 +13,76 @@ public class XeBus : MonoBehaviour
     // Quản lý việc chạy vào bến
     private bool dangVaoBen = false;
     private Vector3 diemDungTrongBen;
-    public float tocDoChay = 10f;
+    public float tocDoChay = 12f;
     public float tocDoXoay = 12f; // Tốc độ xoay mượt của xe
 
     [Header("Góc xoay xe (Y-Rotation)")]
-    [Tooltip("Góc xoay khi chạy từ Trái sang Phải vào bến (-90 hoặc 270 nếu Model Prefab bị ngược)")]
-    public float gocXoayKhiVaoBen = -90f;   
+    [Tooltip("Góc xoay để đầu xe hướng sang BÊN PHẢI (-90 nếu Model bị ngược, hoặc 90 nếu Model chuẩn)")]
+    public float gocXoayXe = -90f;   
 
-    [Tooltip("Góc xoay khi đỗ xong và chạy Thẳng Lên Trên (180 nếu Model Prefab bị ngược đầu)")]
-    public float gocXoayKhiDoXong = 180f;    
+    [Header("Game Feel / Juice Settings")]
+    public bool coHieuUngNhunPhanh = true; // Bật/tắt hiệu ứng nhún phanh
+    private float brakeBounceTimer = 0f;
+    private Vector3 gocScaleBanDau;
 
     public bool DangDungTrongBen => !dangVaoBen && !dangKhoiHanh; // Xe đã đỗ xong trong bến và chưa khởi hành
 
     private void Awake()
     {
         soGheTrong = soGhe;
+        gocScaleBanDau = transform.localScale;
     }
 
     void Update()
     {
-        // 1. Trạng thái chạy từ TRÁI sang PHẢI vào bến
+        // Luôn xoay mặt xe hướng sang bên PHẢI (Y = gocXoayXe)
+        Quaternion targetRotation = Quaternion.Euler(0, gocXoayXe, 0);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, tocDoXoay * Time.deltaTime);
+
+        // 1. Trạng thái chạy từ TRÁI vào bến đỗ
         if (dangVaoBen)
         {
-            // Di chuyển tới điểm đỗ
             transform.position = Vector3.MoveTowards(transform.position, diemDungTrongBen, tocDoChay * Time.deltaTime);
-
-            // Quay mặt xe theo gocXoayKhiVaoBen
-            Quaternion targetRotation = Quaternion.Euler(0, gocXoayKhiVaoBen, 0);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, tocDoXoay * Time.deltaTime);
 
             // Khi tới vị trí đỗ
             if (Vector3.Distance(transform.position, diemDungTrongBen) < 0.01f)
             {
                 transform.position = diemDungTrongBen;
-                // Xoay mặt xe hướng thẳng LÊN TRÊN
-                transform.rotation = Quaternion.Euler(0, gocXoayKhiDoXong, 0);
+                dangVaoBen = false; // Đã đỗ đúng vị trí, dừng lại đón khách
+                brakeBounceTimer = 0.2f; // Kích hoạt hiệu ứng nhún phanh dừng xe 0.2s
                 
-                dangVaoBen = false; // Đã đỗ đúng vị trí
-                transform.DOPunchRotation(new Vector3(10f, 0, 0), 0.3f, 5, 0.5f)
-                    .OnComplete(() => 
-                    {
-                        // Sau khi xe giật phanh xong, mới bắt đầu mở cửa quét khách chờ
-                        BenXe.Instance.QuetKhachDangCho();
-                    });
+                if (BenXe.Instance != null)
+                {
+                    BenXe.Instance.QuetKhachDangCho();
+                }
             }
         }
-        // 2. Trạng thái khởi hành THẲNG HƯỚNG LÊN TRÊN
+        // Hiệu ứng Nhún Phanh Giật Xe khi dừng hoặc có khách nhảy lên
+        else if (brakeBounceTimer > 0)
+        {
+            brakeBounceTimer -= Time.deltaTime;
+            if (coHieuUngNhunPhanh)
+            {
+                float bounce = Mathf.Sin(brakeBounceTimer * Mathf.PI * 10f) * 0.08f;
+                transform.localScale = gocScaleBanDau + new Vector3(-bounce, bounce, -bounce);
+            }
+            if (brakeBounceTimer <= 0)
+            {
+                transform.localScale = gocScaleBanDau;
+            }
+        }
+        // 2. Trạng thái khởi hành CHẠY TIẾP TỤC SANG BÊN PHẢI (phóng đi)
         else if (dangKhoiHanh)
         {
-            // Giữ xoay đầu xe hướng lên trên
-            Quaternion targetRotation = Quaternion.Euler(0, gocXoayKhiDoXong, 0);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, tocDoXoay * Time.deltaTime);
-            
-            // Chạy thẳng lên phía trên màn hình (+Z thế giới)
-            transform.position += Vector3.forward * tocDoChay * Time.deltaTime;
+            // Hiệu ứng rồ ga nảy xe khi tăng tốc phóng đi
+            if (coHieuUngNhunPhanh)
+            {
+                float stretch = Mathf.Sin(Time.time * 25f) * 0.04f;
+                transform.localScale = gocScaleBanDau + new Vector3(stretch, -stretch, stretch);
+            }
+
+            // Chạy tiếp tục sang phải
+            transform.position += Vector3.right * tocDoChay * Time.deltaTime;
         }
     }
 
@@ -80,6 +96,10 @@ public class XeBus : MonoBehaviour
     public bool ThemKhach()
     {
         soGheTrong--; 
+        
+        // Nhún nhẹ xe 0.15s tạo cảm giác thỏa mãn mỗi khi có 1 khách nhảy lên xe
+        brakeBounceTimer = 0.15f;
+
         if (soGheTrong <= 0)
         {
             dangKhoiHanh = true; 

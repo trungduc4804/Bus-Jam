@@ -45,6 +45,15 @@ public class NhanVat : MonoBehaviour
         if (dangDiChuyen)
         {
             if (animator != null) animator.SetBool("isWalking", true);
+
+            // Quay mặt nhân vật về hướng đang di chuyển (nếu có di chuyển)
+            Vector3 huongDi = (diemDen - transform.position).normalized;
+            if (huongDi != Vector3.zero)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(huongDi);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 15f * Time.deltaTime);
+            }
+
             // Vector3.MoveTowards giúp tính toán và di chuyển mượt mà giữa 2 điểm
             transform.position = Vector3.MoveTowards(transform.position, diemDen, tocDo * Time.deltaTime);
             
