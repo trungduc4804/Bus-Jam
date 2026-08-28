@@ -1,4 +1,5 @@
 using UnityEngine;
+using DG.Tweening;
 
 public class XeBus : MonoBehaviour
 {
@@ -49,10 +50,12 @@ public class XeBus : MonoBehaviour
                 transform.rotation = Quaternion.Euler(0, gocXoayKhiDoXong, 0);
                 
                 dangVaoBen = false; // Đã đỗ đúng vị trí
-                if (BenXe.Instance != null)
-                {
-                    BenXe.Instance.QuetKhachDangCho();
-                }
+                transform.DOPunchRotation(new Vector3(10f, 0, 0), 0.3f, 5, 0.5f)
+                    .OnComplete(() => 
+                    {
+                        // Sau khi xe giật phanh xong, mới bắt đầu mở cửa quét khách chờ
+                        BenXe.Instance.QuetKhachDangCho();
+                    });
             }
         }
         // 2. Trạng thái khởi hành THẲNG HƯỚNG LÊN TRÊN
