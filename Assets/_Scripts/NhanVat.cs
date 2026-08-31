@@ -39,14 +39,23 @@ public class NhanVat : MonoBehaviour
         }
     }
 
+    private Vector3 diemDenXe;
+    private bool dangDiChuyenToiXe = false;
+
+    public void DiChuyenToiXe(Vector3 viTriXe)
+    {
+        diemDenXe = viTriXe;
+        dangDiChuyenToiXe = true;
+    }
+
     private void Update()
     {
-        // Nếu biến dangDiChuyen là true, nhân vật sẽ liên tục nhích về phía đích
+        // 1. Di chuyển từ vị trí đố tới Slot hàng chờ
         if (dangDiChuyen)
         {
             if (animator != null) animator.SetBool("isWalking", true);
 
-            // Quay mặt nhân vật về hướng đang di chuyển (nếu có di chuyển)
+            // Quay mặt nhân vật về hướng đang di chuyển
             Vector3 huongDi = (diemDen - transform.position).normalized;
             if (huongDi != Vector3.zero)
             {
@@ -54,17 +63,42 @@ public class NhanVat : MonoBehaviour
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 15f * Time.deltaTime);
             }
 
-            // Vector3.MoveTowards giúp tính toán và di chuyển mượt mà giữa 2 điểm
             transform.position = Vector3.MoveTowards(transform.position, diemDen, tocDo * Time.deltaTime);
             
-            // Nếu khoảng cách đến đích rất nhỏ (gần như đã tới nơi), thì dừng lại
             if (Vector3.Distance(transform.position, diemDen) < 0.01f)
             {
                 transform.position = diemDen;
                 dangDiChuyen = false;
                 if (animator != null) animator.SetBool("isWalking", false);
-                // Thử lên xe bus khi tới slot
+                // Thử lên xe bus khi vừa tới slot
                 ThuLenXeBus();
+            }
+        }
+        // 2. Di chuyển từ Slot tới sát vị trí Xe Bus để chui vào xe
+        else if (dangDiChuyenToiXe)
+        {
+            if (animator != null) animator.SetBool("isWalking", true);
+
+            Vector3 huongDi = (diemDenXe - transform.position).normalized;
+            if (huongDi != Vector3.zero)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(huongDi);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 15f * Time.deltaTime);
+            }
+
+            transform.position = Vector3.MoveTowards(transform.position, diemDenXe, tocDo * Time.deltaTime);
+            
+            // Khi đi tới khoảng cách sát xe (< 0.4f)
+            if (Vector3.Distance(transform.position, diemDenXe) < 0.4f)
+            {
+                dangDiChuyenToiXe = false;
+                if (animator != null) animator.SetBool("isWalking", false);
+                
+                // Chính thức chui vào xe bus
+                if (BenXe.Instance != null)
+                {
+                    BenXe.Instance.ChoPhepLenXe(this);
+                }
             }
         }
     }
@@ -73,10 +107,10 @@ public class NhanVat : MonoBehaviour
     {
         if (BenXe.Instance != null)
         {
-            bool lenXeThanhCong = BenXe.Instance.KtraVaLenXe(this);
-            if (lenXeThanhCong)
+            bool batDauLenXe = BenXe.Instance.KtraVaChoLenXe(this);
+            if (batDauLenXe)
             {
-                // Kiểm tra xem những người khác trong hàng chờ có thể lên xe tiếp không
+                // Sau khi 1 người rời slot đi tới xe, thông báo cho người khác trong hàng chờ biết
                 if (TouchManager.Instance != null)
                 {
                     TouchManager.Instance.KiemTraNguoiTrongHangChoLenXe();

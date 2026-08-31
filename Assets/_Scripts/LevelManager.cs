@@ -134,10 +134,10 @@ public class LevelManager : MonoBehaviour
     // Xóa tất cả các xe bus hoặc nhân vật cũ kéo thả trong Scene Hierarchy trước khi chơi
     private void XoaObjectRaoTrongScene()
     {
-        XeBus[] xeCus = Object.FindObjectsOfType<XeBus>();
+        XeBus[] xeCus = Object.FindObjectsByType<XeBus>(FindObjectsSortMode.None);
         foreach (XeBus xe in xeCus) Destroy(xe.gameObject);
 
-        NhanVat[] khachCus = Object.FindObjectsOfType<NhanVat>();
+        NhanVat[] khachCus = Object.FindObjectsByType<NhanVat>(FindObjectsSortMode.None);
         foreach (NhanVat nv in khachCus) Destroy(nv.gameObject);
     }
 

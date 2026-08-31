@@ -8,6 +8,7 @@ public class XeBus : MonoBehaviour
     public int soGhe = 3;    
     
     private int soGheTrong; 
+    private int soKhachDangDiDen = 0; // Số lượng khách đang đi bộ từ slot tới xe
     private bool dangKhoiHanh = false; 
     
     // Quản lý việc chạy vào bến
@@ -31,6 +32,18 @@ public class XeBus : MonoBehaviour
     {
         soGheTrong = soGhe;
         gocScaleBanDau = transform.localScale;
+    }
+
+    // Kiểm tra xe còn chỗ trống cho khách mới bắt đầu đi bộ tới không
+    public bool CoChoTrongChoKhach()
+    {
+        return (soGheTrong - soKhachDangDiDen) > 0;
+    }
+
+    // Đăng ký 1 chỗ cho khách đang bắt đầu đi bộ tới xe
+    public void DangKyKhachDiDen()
+    {
+        soKhachDangDiDen++;
     }
 
     void Update()
@@ -95,6 +108,7 @@ public class XeBus : MonoBehaviour
 
     public bool ThemKhach()
     {
+        if (soKhachDangDiDen > 0) soKhachDangDiDen--;
         soGheTrong--; 
         
         // Nhún nhẹ xe 0.15s tạo cảm giác thỏa mãn mỗi khi có 1 khách nhảy lên xe

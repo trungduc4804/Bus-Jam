@@ -58,10 +58,9 @@ public class BenXe : MonoBehaviour
         }
     }
 
-    // Tách riêng logic cho lên xe ra một hàm để tái sử dụng
-    private void ChoPhepLenXe(NhanVat khachHang)
+    // Cho phép khách chui vào xe sau khi đã đi bộ tới sát vị trí xe bus
+    public void ChoPhepLenXe(NhanVat khachHang)
     {
-        // Xóa khách khỏi danh sách chờ nếu họ đang ở trong đó
         if (danhSachKhachDangCho.Contains(khachHang))
         {
             danhSachKhachDangCho.Remove(khachHang);
@@ -69,13 +68,13 @@ public class BenXe : MonoBehaviour
 
         HuyDangKyNhanVat(khachHang);
 
-        // GIẢI PHÓNG SLOT TRONG TOUCHMANAGER KHI KHÁCH LÊN XE
         if (TouchManager.Instance != null && khachHang.slotIndexHienTai != -1)
         {
             TouchManager.Instance.GiaiPhongSlot(khachHang.slotIndexHienTai);
         }
 
-        Destroy(khachHang.gameObject); 
+        // Hiệu ứng thu nhỏ mượt khi chui vào xe rồi mới Destroy
+        StartCoroutine(HieuUngThuNhoVaXoa(khachHang.gameObject));
 
         if (xeBusHienTai != null)
         {
@@ -118,23 +117,58 @@ public class BenXe : MonoBehaviour
         }
     }
 
-    public bool KtraVaLenXe(NhanVat khachHang)
+    private System.Collections.IEnumerator HieuUngThuNhoVaXoa(GameObject obj)
     {
-        // Chỉ cho phép lên xe nếu xe hiện tại ĐÃ ĐỖ XONG TRONG BẾN (DangDungTrongBen)
-        if (xeBusHienTai != null && xeBusHienTai.DangDungTrongBen && khachHang.mauNV == xeBusHienTai.mauCuaXe)
+        if (obj == null) yield break;
+        Vector3 startScale = obj.transform.localScale;
+        float t = 0f;
+        while (t < 0.15f)
         {
-            ChoPhepLenXe(khachHang);
+            t += Time.deltaTime;
+            if (obj != null)
+            {
+                obj.transform.localScale = Vector3.Lerp(startScale, Vector3.zero, t / 0.15f);
+            }
+            yield return null;
+        }
+        if (obj != null) Destroy(obj);
+    }
+
+    public bool KtraVaChoLenXe(NhanVat khachHang)
+    {
+        if (xeBusHienTai != null && xeBusHienTai.DangDungTrongBen 
+            && khachHang.mauNV == xeBusHienTai.mauCuaXe 
+            && xeBusHienTai.CoChoTrongChoKhach())
+        {
+            // Đăng ký 1 chỗ trên xe cho khách đang di chuyển tới
+            xeBusHienTai.DangKyKhachDiDen();
+
+            // Giải phóng slot hàng chờ để người khác có thể đi vào
+            if (TouchManager.Instance != null && khachHang.slotIndexHienTai != -1)
+            {
+                TouchManager.Instance.GiaiPhongSlot(khachHang.slotIndexHienTai);
+                khachHang.slotIndexHienTai = -1;
+            }
+
+            // Cho khách đi bộ tới xe bus
+            Vector3 viTriXe = (viTriDoXe != null) ? viTriDoXe.position : xeBusHienTai.transform.position;
+            khachHang.DiChuyenToiXe(viTriXe);
             return true;
         }
         else
         {
-            // Sai màu hoặc xe chưa tới đỗ xong -> Thêm vào danh sách chờ
             if (!danhSachKhachDangCho.Contains(khachHang))
             {
                 danhSachKhachDangCho.Add(khachHang);
             }
             return false;
         }
+    }
+
+    // Alias để giữ tương thích ngược với code cũ
+    public bool KtraVaLenXe(NhanVat khachHang)
+    {
+        return KtraVaChoLenXe(khachHang);
     }
 
     // Hàm này được gọi từ XeBus.cs khi xe mới vừa đỗ xong
@@ -144,14 +178,14 @@ public class BenXe : MonoBehaviour
         for (int i = danhSachKhachDangCho.Count - 1; i >= 0; i--)
         {
             // Nếu xe hiện tại đã hết hoặc đang di chuyển thì dừng quét
-            if (xeBusHienTai == null || !xeBusHienTai.DangDungTrongBen) break;
+            if (xeBusHienTai == null || !xeBusHienTai.DangDungTrongBen || !xeBusHienTai.CoChoTrongChoKhach()) break;
 
             NhanVat khach = danhSachKhachDangCho[i];
             
             // Nếu phát hiện khách hợp màu với xe mới đến
             if (khach != null && khach.mauNV == xeBusHienTai.mauCuaXe)
             {
-                ChoPhepLenXe(khach);
+                KtraVaChoLenXe(khach);
             }
         }
     }
