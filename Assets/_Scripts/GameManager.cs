@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
     [Header("Giao diện UI")]
     public GameObject panelVictory;
     public GameObject panelGameOver;
+    public GameObject panelSetting;
 
     // Biến khóa chặn việc gọi Thắng/Thua nhiều lần
     private bool isGameOver = false; 
@@ -53,5 +54,17 @@ public class GameManager : MonoBehaviour
     public void NextLevel(){
         LevelManager.levelIndex++;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+    public void Setting(){
+        if (panelSetting != null) 
+            panelSetting.SetActive(true); // Bật bảng Setting
+        else
+            Debug.LogWarning("[GameManager] Bạn chưa kéo Panel Setting vào ô Panel Setting trong Inspector của GameManager!");
+    }
+    public void CloseSetting(){
+        if (panelSetting != null) 
+            panelSetting.SetActive(false); // Tắt bảng Setting
+        else
+            Debug.LogWarning("[GameManager] Bạn chưa kéo Panel Setting vào ô Panel Setting trong Inspector của GameManager!");
     }
 }

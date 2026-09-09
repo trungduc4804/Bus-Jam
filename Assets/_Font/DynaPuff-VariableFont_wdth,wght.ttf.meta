@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: ddb60b32968409d4ab273c755fe9c9f4
+guid: bd3c9c606ee678e40a4aebc7f082b4b7
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,7 +9,7 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - Kenney Future Narrow
+  - DynaPuff
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0
