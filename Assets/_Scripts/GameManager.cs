@@ -51,17 +51,31 @@ public class GameManager : MonoBehaviour
         // Load lại chính Scene đang mở hiện tại
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
-    public void NextLevel(){
+
+    public void NextLevel()
+    {
         LevelManager.levelIndex++;
+        PlayerPrefs.SetInt("CurrentLevel", LevelManager.levelIndex);
+        PlayerPrefs.Save();
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
-    public void Setting(){
+
+    // Quay trở về màn hình Menu chính
+    public void BackToMenu()
+    {
+        SceneManager.LoadScene("MenuGame");
+    }
+
+    public void Setting()
+    {
         if (panelSetting != null) 
             panelSetting.SetActive(true); // Bật bảng Setting
         else
             Debug.LogWarning("[GameManager] Bạn chưa kéo Panel Setting vào ô Panel Setting trong Inspector của GameManager!");
     }
-    public void CloseSetting(){
+
+    public void CloseSetting()
+    {
         if (panelSetting != null) 
             panelSetting.SetActive(false); // Tắt bảng Setting
         else
