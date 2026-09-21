@@ -64,12 +64,14 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt("CurrentLevel", LevelManager.levelIndex);
         PlayerPrefs.Save();
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayButtonClick();
     }
 
     // Quay trở về màn hình Menu chính
     public void BackToMenu()
     {
         SceneManager.LoadScene("MenuGame");
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayButtonClick();
     }
 
     public void Setting()
@@ -78,6 +80,7 @@ public class GameManager : MonoBehaviour
             panelSetting.SetActive(true); // Bật bảng Setting
         else
             Debug.LogWarning("[GameManager] Bạn chưa kéo Panel Setting vào ô Panel Setting trong Inspector của GameManager!");
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayButtonClick();
     }
 
     public void CloseSetting()
@@ -86,5 +89,6 @@ public class GameManager : MonoBehaviour
             panelSetting.SetActive(false); // Tắt bảng Setting
         else
             Debug.LogWarning("[GameManager] Bạn chưa kéo Panel Setting vào ô Panel Setting trong Inspector của GameManager!");
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayButtonClick();
     }
 }

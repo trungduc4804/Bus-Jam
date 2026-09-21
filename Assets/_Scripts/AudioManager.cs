@@ -174,6 +174,14 @@ public class AudioManager : MonoBehaviour
         sfxSource.PlayOneShot(clip, sfxVolume);
     }
 
+    public void StopMusic()
+    {
+        if (musicSource != null)
+        {
+            musicSource.Stop();
+        }
+    }
+
     // Các hàm gọi nhanh tiện lợi từ bất kỳ script nào
     public void PlayTapKhach() => PlaySFX(sfxTapKhach, 0.12f);
     public void PlayKhachBiChan() => PlaySFX(sfxKhachBiChan, 0.05f);
@@ -181,7 +189,20 @@ public class AudioManager : MonoBehaviour
     public void PlayHangChoDay() => PlaySFX(sfxHangChoDay, 0f);
     public void PlayXeDen() => PlaySFX(sfxXeDen, 0.04f);
     public void PlayXeDi() => PlaySFX(sfxXeDi, 0.04f);
-    public void PlayChienThang() => PlaySFX(sfxChienThang, 0f);
-    public void PlayThatBai() => PlaySFX(sfxThatBai, 0f);
+    
+    // Khi Chiến Thắng: Dừng nhạc nền và phát tiếng kèn/pháo hoa mừng chiến thắng
+    public void PlayChienThang()
+    {
+        StopMusic();
+        PlaySFX(sfxChienThang, 0f);
+    }
+
+    // Khi Thất Bại: Dừng nhạc nền và phát tiếng thất bại
+    public void PlayThatBai()
+    {
+        StopMusic();
+        PlaySFX(sfxThatBai, 0f);
+    }
+
     public void PlayButtonClick() => PlaySFX(sfxClickButton, 0.05f);
 }
