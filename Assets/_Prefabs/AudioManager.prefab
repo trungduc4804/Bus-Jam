@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8823173340106676047
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7234485406285238237}
+  - component: {fileID: 5608054088722449057}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7234485406285238237
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8823173340106676047}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5608054088722449057
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8823173340106676047}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ac6fe7eb09f6ff459b7585549ab204d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AudioManager
+  musicSource: {fileID: 0}
+  sfxSource: {fileID: 0}
+  bgmMenu: {fileID: 8300000, guid: 809a9bed8acfabe4c8cb840a717b9021, type: 3}
+  bgmGameplay: {fileID: 8300000, guid: a6f02fe7763a5964881e56e78d943a7f, type: 3}
+  sfxTapKhach: {fileID: 8300000, guid: ac6742682cca8e041bd6f1ed27fbf556, type: 3}
+  sfxKhachBiChan: {fileID: 8300000, guid: 81339fd3e929cb34c9329051a0cc19bf, type: 3}
+  sfxKhachLenXe: {fileID: 8300000, guid: 5eb0ca2321e7a4c42bf99b4ca92579bc, type: 3}
+  sfxHangChoDay: {fileID: 8300000, guid: 58f43bd6b8aee00418c3f25ae830b825, type: 3}
+  sfxXeDen: {fileID: 8300000, guid: e0303a22d9c4ff748a24226d93f644c6, type: 3}
+  sfxXeDi: {fileID: 8300000, guid: 52fb945d36d259f479254525eeebddea, type: 3}
+  sfxChienThang: {fileID: 8300000, guid: 1606f3d8a393dc54dbaa2f92d5425787, type: 3}
+  sfxThatBai: {fileID: 8300000, guid: 63636b298f4bdad40ba50dbc70d68db0, type: 3}
+  sfxClickButton: {fileID: 8300000, guid: 107ec793461bed848b9e3918a74612a2, type: 3}
+  musicVolume: 1
+  sfxVolume: 1
