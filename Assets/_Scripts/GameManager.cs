@@ -26,6 +26,9 @@ public class GameManager : MonoBehaviour
         isGameOver = true;
         Debug.Log("Victory! Hoàn thành xuất sắc!");
         
+        // Phát âm thanh chiến thắng
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayChienThang();
+
         if (panelVictory != null) 
             panelVictory.SetActive(true); // Bật bảng Win
         else
@@ -39,6 +42,9 @@ public class GameManager : MonoBehaviour
         isGameOver = true;
         Debug.Log("Game Over! Kẹt xe rồi!");
         
+        // Phát âm thanh thất bại
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayThatBai();
+
         if (panelGameOver != null) 
             panelGameOver.SetActive(true); // Bật bảng Lose
         else

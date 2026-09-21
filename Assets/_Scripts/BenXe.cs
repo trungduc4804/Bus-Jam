@@ -76,6 +76,9 @@ public class BenXe : MonoBehaviour
         // Hiệu ứng thu nhỏ mượt khi chui vào xe rồi mới Destroy
         StartCoroutine(HieuUngThuNhoVaXoa(khachHang.gameObject));
 
+        // Phát âm thanh Ting khi khách lên xe thành công
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayKhachLenXe();
+
         if (xeBusHienTai != null)
         {
             bool xeDaDay = xeBusHienTai.ThemKhach();

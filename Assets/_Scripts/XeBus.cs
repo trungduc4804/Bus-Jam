@@ -64,6 +64,9 @@ public class XeBus : MonoBehaviour
                 dangVaoBen = false; // Đã đỗ đúng vị trí, dừng lại đón khách
                 brakeBounceTimer = 0.2f; // Kích hoạt hiệu ứng nhún phanh dừng xe 0.2s
                 
+                // Phát âm thanh phanh / khí nén khi xe vào đỗ
+                if (AudioManager.Instance != null) AudioManager.Instance.PlayXeDen();
+
                 if (BenXe.Instance != null)
                 {
                     BenXe.Instance.QuetKhachDangCho();
@@ -117,6 +120,8 @@ public class XeBus : MonoBehaviour
         if (soGheTrong <= 0)
         {
             dangKhoiHanh = true; 
+            // Phát âm thanh còi xe bíp bíp + phóng đi
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayXeDi();
             Destroy(gameObject, 3f); 
             return true; 
         }

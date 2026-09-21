@@ -49,6 +49,8 @@ public class MainMenuManager : MonoBehaviour
     public void PlayGame()
     {
         Debug.Log("[MainMenu] Bắt đầu chơi game!");
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayButtonClick();
+
         // Lấy level người chơi đang chơi dở (mặc định là level 0)
         int currentLevel = PlayerPrefs.GetInt("CurrentLevel", 0);
         LevelManager.levelIndex = currentLevel;
@@ -61,6 +63,8 @@ public class MainMenuManager : MonoBehaviour
     // ==========================================
     public void OpenLevelSelect()
     {
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayButtonClick();
+
         if (panelLevelSelect != null)
         {
             panelLevelSelect.SetActive(true);
@@ -73,6 +77,8 @@ public class MainMenuManager : MonoBehaviour
 
     public void CloseLevelSelect()
     {
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayButtonClick();
+
         if (panelLevelSelect != null)
         {
             panelLevelSelect.SetActive(false);

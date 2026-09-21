@@ -51,6 +51,7 @@ public class TouchManager : MonoBehaviour
                     if (nvBiCham.KiemTraDuongThoat() == false)
                     {
                         Debug.Log($"[Bị chặn] Không thể di chuyển nhân vật {nvBiCham.gameObject.name} ra bãi xe vì có người đứng chặn phía trước!");
+                        if (AudioManager.Instance != null) AudioManager.Instance.PlayKhachBiChan();
                         return; 
                     }
                     // 1. Tìm vị trí slot trống đầu tiên
@@ -58,6 +59,9 @@ public class TouchManager : MonoBehaviour
 
                     if (indexSlotTrong != -1)
                     {
+                        // Phát âm thanh Pop khi chọn khách hợp lệ
+                        if (AudioManager.Instance != null) AudioManager.Instance.PlayTapKhach();
+
                         // 2. Lưu thông tin nhân vật vào slot
                         nhanVatTrongSlot[indexSlotTrong] = nvBiCham;
                         nvBiCham.slotIndexHienTai = indexSlotTrong;
@@ -73,6 +77,7 @@ public class TouchManager : MonoBehaviour
                     {
                         // Nếu hàng chờ đã đầy không còn slot nào trống
                         Debug.Log("Game Over! Hàng chờ đã kín chỗ!");
+                        if (AudioManager.Instance != null) AudioManager.Instance.PlayHangChoDay();
                         GameManager.Instance.LoseGame();
                     }
                 }
