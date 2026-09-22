@@ -61,9 +61,10 @@ public class LevelManager : MonoBehaviour
         XoaObjectRaoTrongScene();
 
         // 1. Cài đặt số slot hàng chờ cho TouchManager theo LevelData
-        if (TouchManager.Instance != null && levelHienTai.soSlotHangCho > 0)
+        if (TouchManager.Instance != null)
         {
-            TouchManager.Instance.CapNhatSoSlot(levelHienTai.soSlotHangCho);
+            int soSlot = levelHienTai.soSlotHangCho > 0 ? levelHienTai.soSlotHangCho : 5;
+            TouchManager.Instance.CapNhatSoSlot(soSlot);
         }
 
         // 2. Lưu danh sách thứ tự Xe Bus từ LevelData vào Queue
