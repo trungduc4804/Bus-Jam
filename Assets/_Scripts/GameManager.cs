@@ -54,24 +54,41 @@ public class GameManager : MonoBehaviour
     // Hàm này sẽ được gán vào nút "Replay" trên UI
     public void ReplayGame()
     {
+        // Ngắt ngay lập tức âm thanh thua game (hoặc SFX còn dở) trước khi load lại
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.StopSFX();
+            AudioManager.Instance.PlayButtonClick();
+        }
+
         // Load lại chính Scene đang mở hiện tại
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     public void NextLevel()
     {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.StopSFX();
+            AudioManager.Instance.PlayButtonClick();
+        }
+
         LevelManager.levelIndex++;
         PlayerPrefs.SetInt("CurrentLevel", LevelManager.levelIndex);
         PlayerPrefs.Save();
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        if (AudioManager.Instance != null) AudioManager.Instance.PlayButtonClick();
     }
 
     // Quay trở về màn hình Menu chính
     public void BackToMenu()
     {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.StopSFX();
+            AudioManager.Instance.PlayButtonClick();
+        }
+
         SceneManager.LoadScene("MenuGame");
-        if (AudioManager.Instance != null) AudioManager.Instance.PlayButtonClick();
     }
 
     public void Setting()

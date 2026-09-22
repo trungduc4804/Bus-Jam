@@ -135,6 +135,8 @@ public class AudioManager : MonoBehaviour
     // ==========================================
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        // Ngắt ngay toàn bộ âm thanh hiệu ứng còn dở từ scene trước (như tiếng thua game dài)
+        StopSFX();
         PhatNhacTheoScene(scene.name);
     }
 
@@ -180,6 +182,21 @@ public class AudioManager : MonoBehaviour
         {
             musicSource.Stop();
         }
+    }
+
+    public void StopSFX()
+    {
+        if (sfxSource != null)
+        {
+            sfxSource.Stop();
+            sfxSource.clip = null;
+        }
+    }
+
+    public void StopAllAudio()
+    {
+        StopMusic();
+        StopSFX();
     }
 
     // Các hàm gọi nhanh tiện lợi từ bất kỳ script nào
