@@ -4521,6 +4521,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuManager
   gameplaySceneName: MainGameplay
   panelLevelSelect: {fileID: 875473817}
+  danhSachNutLevel: []
+  spriteKhoaLevel: {fileID: 21300000, guid: 8a8d2b0638471e847a0ad063d08aa3cb, type: 3}
+  kichThuocIconKhoa: {x: 220, y: 220}
+  mauNutKhiKhoa: {r: 0.65, g: 0.65, b: 0.65, a: 1}
+  mauNutBinhThuong: {r: 1, g: 1, b: 1, a: 1}
   levelButtonsContainer: {fileID: 0}
   levelButtonPrefab: {fileID: 0}
   tongSoLevel: 5

@@ -26,6 +26,16 @@ public class GameManager : MonoBehaviour
         isGameOver = true;
         Debug.Log("Victory! Hoàn thành xuất sắc!");
         
+        // Mở khóa Level tiếp theo khi chiến thắng
+        int currentLevelNumber = LevelManager.levelIndex + 1;
+        int maxUnlocked = PlayerPrefs.GetInt("MaxUnlockedLevel", 1);
+        if (currentLevelNumber >= maxUnlocked)
+        {
+            PlayerPrefs.SetInt("MaxUnlockedLevel", currentLevelNumber + 1);
+            PlayerPrefs.Save();
+            Debug.Log($"[GameManager] Chiến thắng! Đã mở khóa Level {currentLevelNumber + 1}");
+        }
+
         // Phát âm thanh chiến thắng
         if (AudioManager.Instance != null) AudioManager.Instance.PlayChienThang();
 
@@ -75,7 +85,15 @@ public class GameManager : MonoBehaviour
 
         LevelManager.levelIndex++;
         PlayerPrefs.SetInt("CurrentLevel", LevelManager.levelIndex);
+
+        // Mở khóa màn mới
+        int maxUnlocked = PlayerPrefs.GetInt("MaxUnlockedLevel", 1);
+        if (LevelManager.levelIndex + 1 > maxUnlocked)
+        {
+            PlayerPrefs.SetInt("MaxUnlockedLevel", LevelManager.levelIndex + 1);
+        }
         PlayerPrefs.Save();
+
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
