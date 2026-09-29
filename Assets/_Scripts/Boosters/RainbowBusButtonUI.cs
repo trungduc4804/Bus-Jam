@@ -81,7 +81,7 @@ namespace BusJam.Boosters
         private void OnDestroy()
         {
             transform.DOKill();
-            if (BoosterManager.Instance != null)
+            if (BoosterManager.HasInstance && BoosterManager.Instance != null)
             {
                 BoosterManager.Instance.OnBoosterStateChanged -= CapNhatTrangThaiNut;
             }

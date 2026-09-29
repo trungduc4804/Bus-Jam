@@ -10,14 +10,25 @@ namespace BusJam.Commands
     public class UndoManager : MonoBehaviour
     {
         private static UndoManager instance;
+        private static bool isQuitting = false;
+
+        public static bool HasInstance => instance != null;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void ResetQuitState()
+        {
+            isQuitting = false;
+        }
+
         public static UndoManager Instance
         {
             get
             {
+                if (isQuitting) return null;
                 if (instance == null)
                 {
                     instance = UnityEngine.Object.FindAnyObjectByType<UndoManager>();
-                    if (instance == null)
+                    if (instance == null && !isQuitting)
                     {
                         GameObject obj = new GameObject("UndoManager");
                         instance = obj.AddComponent<UndoManager>();
@@ -71,6 +82,19 @@ namespace BusJam.Commands
             }
 
             ResetLuotUndo();
+        }
+
+        private void OnApplicationQuit()
+        {
+            isQuitting = true;
+        }
+
+        private void OnDestroy()
+        {
+            if (instance == this)
+            {
+                instance = null;
+            }
         }
 
         public void ResetLuotUndo()

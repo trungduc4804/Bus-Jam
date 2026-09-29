@@ -126,7 +126,7 @@ namespace BusJam.Commands
         private void OnDestroy()
         {
             transform.DOKill();
-            if (UndoManager.Instance != null)
+            if (UndoManager.HasInstance && UndoManager.Instance != null)
             {
                 UndoManager.Instance.OnUndoStateChanged -= CapNhatTrangThaiNut;
             }

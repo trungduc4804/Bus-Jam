@@ -10,14 +10,25 @@ namespace BusJam.Boosters
     public class BoosterManager : MonoBehaviour
     {
         private static BoosterManager instance;
+        private static bool isQuitting = false;
+
+        public static bool HasInstance => instance != null;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void ResetQuitState()
+        {
+            isQuitting = false;
+        }
+
         public static BoosterManager Instance
         {
             get
             {
+                if (isQuitting) return null;
                 if (instance == null)
                 {
                     instance = UnityEngine.Object.FindAnyObjectByType<BoosterManager>();
-                    if (instance == null)
+                    if (instance == null && !isQuitting)
                     {
                         GameObject obj = new GameObject("BoosterManager");
                         instance = obj.AddComponent<BoosterManager>();
@@ -66,6 +77,19 @@ namespace BusJam.Boosters
             }
 
             ResetBooster();
+        }
+
+        private void OnApplicationQuit()
+        {
+            isQuitting = true;
+        }
+
+        private void OnDestroy()
+        {
+            if (instance == this)
+            {
+                instance = null;
+            }
         }
 
         public void ResetBooster()

@@ -11,14 +11,25 @@ namespace BusJam.VFX
     public class VFXManager : MonoBehaviour
     {
         private static VFXManager instance;
+        private static bool isQuitting = false;
+
+        public static bool HasInstance => instance != null;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void ResetQuitState()
+        {
+            isQuitting = false;
+        }
+
         public static VFXManager Instance
         {
             get
             {
+                if (isQuitting) return null;
                 if (instance == null)
                 {
                     instance = UnityEngine.Object.FindAnyObjectByType<VFXManager>();
-                    if (instance == null)
+                    if (instance == null && !isQuitting)
                     {
                         GameObject obj = new GameObject("VFXManager");
                         instance = obj.AddComponent<VFXManager>();
@@ -415,8 +426,18 @@ namespace BusJam.VFX
             }
         }
 
+        private void OnApplicationQuit()
+        {
+            isQuitting = true;
+        }
+
         private void OnDestroy()
         {
+            if (instance == this)
+            {
+                instance = null;
+            }
+
             if (cameraShakeTweener != null && cameraShakeTweener.IsActive())
             {
                 cameraShakeTweener.Kill();
