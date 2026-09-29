@@ -11,14 +11,14 @@ namespace BusJam.Editor
         [MenuItem("Tools/Bus Jam/Tạo Nút Undo Trên Canvas", false, 10)]
         public static void TaoNutUndoTrenCanvas()
         {
-            Canvas canvas = Object.FindFirstObjectByType<Canvas>();
+            Canvas canvas = Object.FindAnyObjectByType<Canvas>();
             if (canvas == null)
             {
                 EditorUtility.DisplayDialog("Lỗi", "Không tìm thấy Canvas trong Scene!", "OK");
                 return;
             }
 
-            UndoButtonUI existing = Object.FindFirstObjectByType<UndoButtonUI>();
+            UndoButtonUI existing = Object.FindAnyObjectByType<UndoButtonUI>();
             if (existing != null)
             {
                 Selection.activeGameObject = existing.gameObject;
