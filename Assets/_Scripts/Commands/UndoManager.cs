@@ -9,7 +9,23 @@ namespace BusJam.Commands
     /// </summary>
     public class UndoManager : MonoBehaviour
     {
-        public static UndoManager Instance { get; private set; }
+        private static UndoManager instance;
+        public static UndoManager Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = UnityEngine.Object.FindAnyObjectByType<UndoManager>();
+                    if (instance == null)
+                    {
+                        GameObject obj = new GameObject("UndoManager");
+                        instance = obj.AddComponent<UndoManager>();
+                    }
+                }
+                return instance;
+            }
+        }
 
         [Header("Cài đặt Hoàn tác (Undo)")]
         [Tooltip("Cho phép hoàn tác không giới hạn (true) hoặc giới hạn số lượt mỗi màn (false)")]
@@ -44,13 +60,13 @@ namespace BusJam.Commands
 
         private void Awake()
         {
-            if (Instance == null)
+            if (instance == null)
             {
-                Instance = this;
+                instance = this;
             }
-            else
+            else if (instance != this)
             {
-                Destroy(gameObject);
+                Destroy(this);
                 return;
             }
 

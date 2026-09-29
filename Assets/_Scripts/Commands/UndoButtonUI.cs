@@ -46,12 +46,8 @@ namespace BusJam.Commands
                 TaoBadgeSoDem();
             }
 
-            // Đảm bảo UndoManager tồn tại trong scene
-            if (UndoManager.Instance == null)
-            {
-                GameObject obj = new GameObject("UndoManager");
-                obj.AddComponent<UndoManager>();
-            }
+            // Đảm bảo UndoManager được khởi tạo
+            _ = UndoManager.Instance;
         }
 
         private void TaoBadgeSoDem()

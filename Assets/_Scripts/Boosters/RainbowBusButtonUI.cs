@@ -42,12 +42,8 @@ namespace BusJam.Boosters
                 TaoBadgeSoDem();
             }
 
-            // Đảm bảo BoosterManager tồn tại
-            if (BoosterManager.Instance == null)
-            {
-                GameObject obj = new GameObject("BoosterManager");
-                obj.AddComponent<BoosterManager>();
-            }
+            // Đảm bảo BoosterManager được khởi tạo
+            _ = BoosterManager.Instance;
         }
 
         private void TaoBadgeSoDem()

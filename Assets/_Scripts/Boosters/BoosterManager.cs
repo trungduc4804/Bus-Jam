@@ -9,7 +9,23 @@ namespace BusJam.Boosters
     /// </summary>
     public class BoosterManager : MonoBehaviour
     {
-        public static BoosterManager Instance { get; private set; }
+        private static BoosterManager instance;
+        public static BoosterManager Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = UnityEngine.Object.FindAnyObjectByType<BoosterManager>();
+                    if (instance == null)
+                    {
+                        GameObject obj = new GameObject("BoosterManager");
+                        instance = obj.AddComponent<BoosterManager>();
+                    }
+                }
+                return instance;
+            }
+        }
 
         [Header("Cài đặt Booster Xe Cầu Vồng")]
         [Tooltip("Số lượt sử dụng Booster Xe Cầu Vồng trong một ván")]
@@ -39,13 +55,13 @@ namespace BusJam.Boosters
 
         private void Awake()
         {
-            if (Instance == null)
+            if (instance == null)
             {
-                Instance = this;
+                instance = this;
             }
-            else
+            else if (instance != this)
             {
-                Destroy(gameObject);
+                Destroy(this);
                 return;
             }
 

@@ -16,6 +16,10 @@ public class LevelManager : MonoBehaviour
     public GameObject prefabKhachVang;
     public GameObject prefabKhachTim;
 
+    [Header("Giao diện Khách Ẩn (Mystery Passenger)")]
+    [Tooltip("Kéo thả Sprite icon tùy chỉnh của bạn vào đây (ví dụ ảnh ?, icon túi quà, mystery box). Để trống sẽ tự vẽ huy hiệu mặc định")]
+    public Sprite iconKhachAnTuyChinh;
+
     [Header("Prefabs Xe Bus")]
     public GameObject prefabXeDo;
     public GameObject prefabXeXanh;
@@ -33,8 +37,15 @@ public class LevelManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else if (Instance != this)
+        {
+            Destroy(this);
+            return;
+        }
     }
 
     void Start()
@@ -180,10 +191,10 @@ public class LevelManager : MonoBehaviour
     // Xóa tất cả các xe bus hoặc nhân vật cũ kéo thả trong Scene Hierarchy trước khi chơi
     private void XoaObjectRaoTrongScene()
     {
-        XeBus[] xeCus = Object.FindObjectsByType<XeBus>();
+        XeBus[] xeCus = Object.FindObjectsByType<XeBus>(FindObjectsSortMode.None);
         foreach (XeBus xe in xeCus) Destroy(xe.gameObject);
 
-        NhanVat[] khachCus = Object.FindObjectsByType<NhanVat>();
+        NhanVat[] khachCus = Object.FindObjectsByType<NhanVat>(FindObjectsSortMode.None);
         foreach (NhanVat nv in khachCus) Destroy(nv.gameObject);
     }
 

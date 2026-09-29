@@ -143,6 +143,13 @@ namespace BusJam.Editor
             {
                 if (currentLevelData != null) LoadFromLevelData(currentLevelData);
             }
+
+            GUI.backgroundColor = new Color(1f, 0.85f, 0.3f);
+            if (GUILayout.Button("🚀 Tạo Nút Booster Vào Scene", GUILayout.Width(190), GUILayout.Height(20)))
+            {
+                GameSetupMenu.ThietLapToanBoBoosterUI();
+            }
+            GUI.backgroundColor = Color.white;
             EditorGUILayout.EndHorizontal();
 
             // Hiển thị danh sách các Level hiện có trong thư mục Assets/_Data

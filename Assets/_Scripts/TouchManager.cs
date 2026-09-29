@@ -36,9 +36,10 @@ public class TouchManager : MonoBehaviour
                 nhanVatTrongSlot = new NhanVat[danhSachSlot.Length];
             }
         }
-        else
+        else if (Instance != this)
         {
-            Destroy(gameObject);
+            Destroy(this);
+            return;
         }
     }
 
@@ -72,6 +73,7 @@ public class TouchManager : MonoBehaviour
                     {
                         Debug.Log($"[Bị chặn] Không thể di chuyển nhân vật {nvBiCham.gameObject.name} ra bãi xe vì có người đứng chặn phía trước!");
                         if (AudioManager.Instance != null) AudioManager.Instance.PlayKhachBiChan();
+                        if (BusJam.VFX.VFXManager.Instance != null) BusJam.VFX.VFXManager.Instance.PlayKhachBiChanWobble(nvBiCham.transform);
                         return; 
                     }
                     // 1. Tìm vị trí slot trống đầu tiên

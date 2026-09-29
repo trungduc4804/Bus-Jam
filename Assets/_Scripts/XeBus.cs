@@ -102,6 +102,12 @@ public class XeBus : MonoBehaviour
                 dangVaoBen = false; // Đã đỗ đúng vị trí, dừng lại đón khách
                 brakeBounceTimer = 0.2f; // Kích hoạt hiệu ứng nhún phanh dừng xe 0.2s
                 
+                // Hiệu ứng khói phanh xe bùng nở hai bên bánh xe & rung nhẹ
+                if (BusJam.VFX.VFXManager.Instance != null)
+                {
+                    BusJam.VFX.VFXManager.Instance.PlayBrakeSmoke(transform.position);
+                }
+
                 // Phát âm thanh phanh / khí nén khi xe vào đỗ
                 if (AudioManager.Instance != null) AudioManager.Instance.PlayXeDen();
 
@@ -158,6 +164,17 @@ public class XeBus : MonoBehaviour
         if (soGheTrong <= 0)
         {
             dangKhoiHanh = true; 
+
+            // 1. Bắn chùm sao vàng rực rỡ chúc mừng xe hoàn thành
+            if (BusJam.VFX.VFXManager.Instance != null)
+            {
+                BusJam.VFX.VFXManager.Instance.PlayStarBurst(transform.position);
+
+                // 2. Xả làn khói hoạt hình sau đuôi xe khi rồ ga phóng đi
+                Vector3 viTriDuoiXe = transform.position - (Vector3.right * 1.8f) + (Vector3.up * 0.3f);
+                BusJam.VFX.VFXManager.Instance.PlayBusExhaustSmoke(viTriDuoiXe, Vector3.right);
+            }
+
             // Phát âm thanh còi xe bíp bíp + phóng đi
             if (AudioManager.Instance != null) AudioManager.Instance.PlayXeDi();
             Destroy(gameObject, 3f); 

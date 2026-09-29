@@ -17,6 +17,8 @@ public class NhanVat : MonoBehaviour
     [Header("Cơ chế Khách Ẩn (Mystery Passenger)")]
     public bool laKhachAn = false;
     public LoaiMau mauThatSu;
+    [Tooltip("Kéo Sprite tùy chỉnh riêng cho con này nếu muốn. Để trống sẽ dùng từ LevelManager hoặc badge mặc định.")]
+    public Sprite iconKhachAnTuyChinh;
     private GameObject iconChamHoi;
     private Color mauGocRenderer;
     private Renderer[] allRenderers;
@@ -95,6 +97,12 @@ public class NhanVat : MonoBehaviour
             // Bật lại Collider để người chơi có thể click chọn lại
             Collider col = GetComponent<Collider>();
             if (col != null) col.enabled = true;
+
+            // Hiệu ứng hạt tiếp đất khi hoàn tác
+            if (BusJam.VFX.VFXManager.Instance != null)
+            {
+                BusJam.VFX.VFXManager.Instance.PlayPassengerPop(viTriCu, LayMauRGB(mauNV));
+            }
 
             onComplete?.Invoke();
         });
@@ -208,40 +216,60 @@ public class NhanVat : MonoBehaviour
         // 1. Đổi màu nhân vật thành màu xám đen huyền bí
         DatMauRenderer(new Color(0.18f, 0.18f, 0.22f, 1f));
 
-        // 2. Tạo Huy hiệu Dấu Hỏi Vàng Rực Rỡ lơ lửng trên đầu
+        // 2. Tạo Icon lơ lửng trên đầu
         if (iconChamHoi == null)
         {
             iconChamHoi = new GameObject("MysteryBadge");
             iconChamHoi.transform.SetParent(transform, false);
             iconChamHoi.transform.localPosition = new Vector3(0, 2.3f, 0);
 
-            // Tấm nền tròn màu vàng cam viền đen
-            GameObject bgObj = new GameObject("BadgeBg");
-            bgObj.transform.SetParent(iconChamHoi.transform, false);
-            bgObj.transform.localScale = new Vector3(0.6f, 0.6f, 1f);
-            SpriteRenderer sr = bgObj.AddComponent<SpriteRenderer>();
-            sr.sprite = TaoSpriteHuyHieuTron();
-            sr.sortingOrder = 15;
-
-            // Chữ dấu hỏi "?" đen đậm to bản, sắc nét
-            GameObject textObj = new GameObject("QuestionMarkText");
-            textObj.transform.SetParent(iconChamHoi.transform, false);
-            textObj.transform.localPosition = new Vector3(0, 0, -0.05f);
-
-            TextMesh tm = textObj.AddComponent<TextMesh>();
-            tm.text = "?";
-            tm.fontSize = 80;
-            tm.fontStyle = FontStyle.Bold;
-            tm.characterSize = 0.16f;
-            tm.color = new Color(0.12f, 0.12f, 0.14f, 1f); // Màu đen tuyền đậm tương phản cực mạnh
-            tm.alignment = TextAlignment.Center;
-            tm.anchor = TextAnchor.MiddleCenter;
-
-            MeshRenderer mrText = textObj.GetComponent<MeshRenderer>();
-            if (mrText != null)
+            // Kiểm tra xem có Sprite tùy chỉnh không (ưu tiên trên NhanVat, rồi tới LevelManager)
+            Sprite customSprite = iconKhachAnTuyChinh;
+            if (customSprite == null && LevelManager.Instance != null)
             {
-                mrText.sortingLayerID = sr.sortingLayerID;
-                mrText.sortingOrder = sr.sortingOrder + 1;
+                customSprite = LevelManager.Instance.iconKhachAnTuyChinh;
+            }
+
+            if (customSprite != null)
+            {
+                // Nếu người dùng cung cấp Sprite tùy chỉnh: Dùng trực tiếp SpriteRenderer này!
+                GameObject spriteObj = new GameObject("CustomMysteryIcon");
+                spriteObj.transform.SetParent(iconChamHoi.transform, false);
+                spriteObj.transform.localScale = new Vector3(0.75f, 0.75f, 1f);
+                SpriteRenderer sr = spriteObj.AddComponent<SpriteRenderer>();
+                sr.sprite = customSprite;
+                sr.sortingOrder = 15;
+            }
+            else
+            {
+                // Nếu không có: Dùng Huy hiệu Vàng Neon viền đen + Dấu hỏi "?" mặc định
+                GameObject bgObj = new GameObject("BadgeBg");
+                bgObj.transform.SetParent(iconChamHoi.transform, false);
+                bgObj.transform.localScale = new Vector3(0.6f, 0.6f, 1f);
+                SpriteRenderer sr = bgObj.AddComponent<SpriteRenderer>();
+                sr.sprite = TaoSpriteHuyHieuTron();
+                sr.sortingOrder = 15;
+
+                // Chữ dấu hỏi "?" đen đậm to bản, sắc nét
+                GameObject textObj = new GameObject("QuestionMarkText");
+                textObj.transform.SetParent(iconChamHoi.transform, false);
+                textObj.transform.localPosition = new Vector3(0, 0, -0.05f);
+
+                TextMesh tm = textObj.AddComponent<TextMesh>();
+                tm.text = "?";
+                tm.fontSize = 80;
+                tm.fontStyle = FontStyle.Bold;
+                tm.characterSize = 0.16f;
+                tm.color = new Color(0.12f, 0.12f, 0.14f, 1f); // Màu đen tuyền đậm tương phản cực mạnh
+                tm.alignment = TextAlignment.Center;
+                tm.anchor = TextAnchor.MiddleCenter;
+
+                MeshRenderer mrText = textObj.GetComponent<MeshRenderer>();
+                if (mrText != null)
+                {
+                    mrText.sortingLayerID = sr.sortingLayerID;
+                    mrText.sortingOrder = sr.sortingOrder + 1;
+                }
             }
 
             // Hiệu ứng nhấp nhô lơ lửng & đập nhẹ (Floating & Pulsing)
@@ -296,6 +324,12 @@ public class NhanVat : MonoBehaviour
         // 3. Hiệu ứng Pop nảy người bất ngờ (Juice)
         transform.DOKill();
         transform.DOPunchScale(Vector3.one * 0.35f, 0.35f, 10, 1f);
+
+        // Hiệu ứng hạt nổ màu sắc
+        if (BusJam.VFX.VFXManager.Instance != null)
+        {
+            BusJam.VFX.VFXManager.Instance.PlayPassengerPop(transform.position, LayMauRGB(mauThatSu));
+        }
 
         // 4. Phát âm thanh Pop hé lộ
         if (AudioManager.Instance != null)

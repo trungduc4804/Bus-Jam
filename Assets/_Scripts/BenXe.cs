@@ -16,8 +16,15 @@ public class BenXe : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else if (Instance != this)
+        {
+            Destroy(this);
+            return;
+        }
     }
 
     // Danh sách theo dõi toàn bộ nhân vật đang còn sống trong game

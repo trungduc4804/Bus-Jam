@@ -130,6 +130,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MoveToTarget
   mauNV: 0
   tocDo: 5
+  laKhachAn: 0
+  mauThatSu: 0
   khoangCachKiemTra: 2
   banKinhKiemTra: 0.4
   slotIndexHienTai: -1

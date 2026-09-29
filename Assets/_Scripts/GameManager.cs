@@ -18,16 +18,12 @@ public class GameManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            if (GetComponent<BusJam.Commands.UndoManager>() == null)
-            {
-                gameObject.AddComponent<BusJam.Commands.UndoManager>();
-            }
-            if (GetComponent<BusJam.Boosters.BoosterManager>() == null)
-            {
-                gameObject.AddComponent<BusJam.Boosters.BoosterManager>();
-            }
         }
-        else Destroy(gameObject);
+        else if (Instance != this)
+        {
+            Destroy(this);
+            return;
+        }
     }
 
     public void WinGame()
@@ -45,6 +41,12 @@ public class GameManager : MonoBehaviour
             PlayerPrefs.SetInt("MaxUnlockedLevel", currentLevelNumber + 1);
             PlayerPrefs.Save();
             Debug.Log($"[GameManager] Chiến thắng! Đã mở khóa Level {currentLevelNumber + 1}");
+        }
+
+        // Kích hoạt pháo hoa Confetti rực rỡ & rung nhẹ màn hình mừng chiến thắng
+        if (BusJam.VFX.VFXManager.Instance != null)
+        {
+            BusJam.VFX.VFXManager.Instance.PlayConfettiVictory();
         }
 
         // Phát âm thanh chiến thắng
