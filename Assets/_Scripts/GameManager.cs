@@ -22,6 +22,10 @@ public class GameManager : MonoBehaviour
             {
                 gameObject.AddComponent<BusJam.Commands.UndoManager>();
             }
+            if (GetComponent<BusJam.Boosters.BoosterManager>() == null)
+            {
+                gameObject.AddComponent<BusJam.Boosters.BoosterManager>();
+            }
         }
         else Destroy(gameObject);
     }

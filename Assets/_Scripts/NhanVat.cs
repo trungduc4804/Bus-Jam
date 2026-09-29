@@ -5,13 +5,21 @@ public enum LoaiMau {
     Do,
     Xanh,
     Vang, 
-    Tim
+    Tim,
+    CauVong // Xe Cầu Vồng (VIP / Rainbow Bus) - chở bất kỳ màu nào
 }
 
 public class NhanVat : MonoBehaviour
 {
     public LoaiMau mauNV;
     public float tocDo = 5f; // Tốc độ chạy của nhân vật
+
+    [Header("Cơ chế Khách Ẩn (Mystery Passenger)")]
+    public bool laKhachAn = false;
+    public LoaiMau mauThatSu;
+    private GameObject iconChamHoi;
+    private Color mauGocRenderer;
+    private Renderer[] allRenderers;
 
     [Header("Cấu hình kiểm tra đường bị chặn")]
     public float khoangCachKiemTra = 1.5f; // Khoảng cách quét nhân vật phía trước
@@ -28,6 +36,17 @@ public class NhanVat : MonoBehaviour
 
     private void Start()
     {
+        allRenderers = GetComponentsInChildren<Renderer>();
+        if (allRenderers != null && allRenderers.Length > 0 && allRenderers[0] != null && allRenderers[0].material != null)
+        {
+            mauGocRenderer = allRenderers[0].material.color;
+        }
+
+        if (laKhachAn)
+        {
+            ApDungGiaoDienKhachAn();
+        }
+
         if (BenXe.Instance != null)
         {
             BenXe.Instance.DangKyNhanVat(this);
@@ -37,6 +56,7 @@ public class NhanVat : MonoBehaviour
     private void OnDestroy()
     {
         transform.DOKill();
+        if (iconChamHoi != null) iconChamHoi.transform.DOKill();
 
         if (BenXe.Instance != null)
         {
@@ -83,8 +103,102 @@ public class NhanVat : MonoBehaviour
         transform.DORotateQuaternion(xoayCu, 0.35f);
     }
 
+    /// <summary>
+    /// Cấu hình nhân vật này là Khách Ẩn với màu thật sự sẽ hé lộ khi đường đi được giải phóng
+    /// </summary>
+    public void CaiDatKhachAn(LoaiMau mauThat)
+    {
+        laKhachAn = true;
+        mauThatSu = mauThat;
+        ApDungGiaoDienKhachAn();
+    }
+
+    private void ApDungGiaoDienKhachAn()
+    {
+        if (allRenderers == null) allRenderers = GetComponentsInChildren<Renderer>();
+        if (allRenderers != null)
+        {
+            foreach (var r in allRenderers)
+            {
+                if (r != null && r.material != null)
+                {
+                    r.material.color = new Color(0.18f, 0.18f, 0.22f);
+                }
+            }
+        }
+
+        // Tạo icon "?" lơ lửng trên đầu
+        if (iconChamHoi == null)
+        {
+            iconChamHoi = new GameObject("MysteryQuestionMark");
+            iconChamHoi.transform.SetParent(transform, false);
+            iconChamHoi.transform.localPosition = new Vector3(0, 1.8f, 0);
+
+            TextMesh tm = iconChamHoi.AddComponent<TextMesh>();
+            tm.text = "?";
+            tm.fontSize = 50;
+            tm.characterSize = 0.12f;
+            tm.color = new Color(1f, 0.85f, 0.2f);
+            tm.alignment = TextAlignment.Center;
+            tm.anchor = TextAnchor.MiddleCenter;
+
+            // Hiệu ứng nhấp nhô lơ lửng
+            iconChamHoi.transform.DOLocalMoveY(2.05f, 0.65f).SetLoops(-1, LoopType.Yoyo).SetEase(Ease.InOutSine);
+        }
+    }
+
+    /// <summary>
+    /// Hé lộ màu sắc thật sự của khách ẩn khi không còn ai chặn đường phía trước
+    /// </summary>
+    public void HeLoMauThat()
+    {
+        if (!laKhachAn) return;
+        laKhachAn = false;
+        mauNV = mauThatSu;
+
+        // Xóa icon dấu hỏi
+        if (iconChamHoi != null)
+        {
+            iconChamHoi.transform.DOKill();
+            Destroy(iconChamHoi);
+        }
+
+        // Khôi phục màu sắc gốc của nhân vật
+        if (allRenderers != null)
+        {
+            foreach (var r in allRenderers)
+            {
+                if (r != null && r.material != null)
+                {
+                    r.material.color = mauGocRenderer;
+                }
+            }
+        }
+
+        // Hiệu ứng Pop nảy người bất ngờ (Juice)
+        transform.DOKill();
+        transform.DOPunchScale(Vector3.one * 0.35f, 0.35f, 10, 1f);
+
+        // Phát âm thanh Pop hé lộ
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayTapKhach();
+        }
+
+        Debug.Log($"[Khách Ẩn] Đã hé lộ màu thật: {mauNV} ({gameObject.name})");
+    }
+
     private void Update()
     {
+        // 0. Nếu là Khách Ẩn và đường thoát phía trước đã thông thoáng -> Tự động hé lộ màu thật!
+        if (laKhachAn && !dangDiChuyen && !dangDiChuyenToiXe)
+        {
+            if (KiemTraDuongThoat())
+            {
+                HeLoMauThat();
+            }
+        }
+
         // 1. Di chuyển từ vị trí đố tới Slot hàng chờ
         if (dangDiChuyen)
         {

@@ -60,10 +60,14 @@ public class LevelManager : MonoBehaviour
         // 0. Dọn dẹp sạch các XeBus hoặc NhanVat rác kéo thả thủ công còn sót trong Scene
         XoaObjectRaoTrongScene();
 
-        // 0.1 Reset lịch sử hoàn tác (Undo) cho màn chơi mới
+        // 0.1 Reset lịch sử hoàn tác (Undo) và Booster cho màn chơi mới
         if (BusJam.Commands.UndoManager.Instance != null)
         {
             BusJam.Commands.UndoManager.Instance.ResetLuotUndo();
+        }
+        if (BusJam.Boosters.BoosterManager.Instance != null)
+        {
+            BusJam.Boosters.BoosterManager.Instance.ResetBooster();
         }
 
         // 1. Cài đặt số slot hàng chờ cho TouchManager theo LevelData
@@ -120,10 +124,33 @@ public class LevelManager : MonoBehaviour
                     float posZ = viTriBatDau.z + offsetZ - (z * khoangCachO);
                     Vector3 toaDo = new Vector3(posX, viTriBatDau.y, posZ);
 
-                    GameObject prefabKhach = GetPrefabKhach(c);
+                    char upperChar = char.ToUpper(c);
+                    bool laKhachAn = (upperChar == 'M' || upperChar == '?');
+                    LoaiMau mauThucTe = LoaiMau.Do;
+
+                    if (laKhachAn)
+                    {
+                        // Chọn màu thật từ danh sách xe bus của level để đảm bảo luôn có xe đón
+                        if (levelHienTai.danhSachXeBus != null && levelHienTai.danhSachXeBus.Length > 0)
+                        {
+                            mauThucTe = levelHienTai.danhSachXeBus[Random.Range(0, levelHienTai.danhSachXeBus.Length)];
+                            if (mauThucTe == LoaiMau.CauVong) mauThucTe = (LoaiMau)Random.Range(0, 4);
+                        }
+                        else
+                        {
+                            mauThucTe = (LoaiMau)Random.Range(0, 4);
+                        }
+                    }
+
+                    GameObject prefabKhach = laKhachAn ? GetPrefabKhachByMau(mauThucTe) : GetPrefabKhach(c);
                     if (prefabKhach != null)
                     {
-                        Instantiate(prefabKhach, toaDo, Quaternion.identity);
+                        GameObject objKhach = Instantiate(prefabKhach, toaDo, Quaternion.identity);
+                        NhanVat nv = objKhach.GetComponent<NhanVat>();
+                        if (nv != null && laKhachAn)
+                        {
+                            nv.CaiDatKhachAn(mauThucTe);
+                        }
                     }
 
                     colIndex++;
@@ -141,10 +168,10 @@ public class LevelManager : MonoBehaviour
     // Xóa tất cả các xe bus hoặc nhân vật cũ kéo thả trong Scene Hierarchy trước khi chơi
     private void XoaObjectRaoTrongScene()
     {
-        XeBus[] xeCus = Object.FindObjectsByType<XeBus>(FindObjectsSortMode.None);
+        XeBus[] xeCus = Object.FindObjectsByType<XeBus>();
         foreach (XeBus xe in xeCus) Destroy(xe.gameObject);
 
-        NhanVat[] khachCus = Object.FindObjectsByType<NhanVat>(FindObjectsSortMode.None);
+        NhanVat[] khachCus = Object.FindObjectsByType<NhanVat>();
         foreach (NhanVat nv in khachCus) Destroy(nv.gameObject);
     }
 
@@ -164,6 +191,10 @@ public class LevelManager : MonoBehaviour
             if (xeBus != null)
             {
                 xeBus.mauCuaXe = mauXe;
+                if (mauXe == LoaiMau.CauVong)
+                {
+                    xeBus.BienThanhXeCauVong();
+                }
                 return xeBus;
             }
         }
@@ -174,6 +205,18 @@ public class LevelManager : MonoBehaviour
     public bool ConXeBusTrongQueue()
     {
         return hangChoXeBus.Count > 0;
+    }
+
+    public GameObject GetPrefabKhachByMau(LoaiMau mau)
+    {
+        switch (mau)
+        {
+            case LoaiMau.Do: return prefabKhachDo;
+            case LoaiMau.Xanh: return prefabKhachXanh;
+            case LoaiMau.Vang: return prefabKhachVang;
+            case LoaiMau.Tim: return prefabKhachTim;
+            default: return prefabKhachDo;
+        }
     }
 
     private GameObject GetPrefabKhach(char kyTu)
@@ -197,6 +240,7 @@ public class LevelManager : MonoBehaviour
             case LoaiMau.Xanh: return prefabXeXanh;
             case LoaiMau.Vang: return prefabXeVang;
             case LoaiMau.Tim: return prefabXeTim;
+            case LoaiMau.CauVong: return prefabXeDo;
             default: return null;
         }
     }

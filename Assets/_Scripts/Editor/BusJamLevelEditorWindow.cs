@@ -23,7 +23,7 @@ namespace BusJam.Editor
         private char[,] banDoGrid = new char[4, 4];
 
         // Palette chọn màu để vẽ
-        private enum BrushColor { Trong, Do, Xanh, Vang, Tim }
+        private enum BrushColor { Trong, Do, Xanh, Vang, Tim, KhachAn }
         private BrushColor currentBrush = BrushColor.Do;
 
         // Danh sách xe bus đang chỉnh sửa
@@ -35,6 +35,8 @@ namespace BusJam.Editor
         private readonly Color colorBlue = new Color(0.25f, 0.6f, 0.98f);
         private readonly Color colorYellow = new Color(0.98f, 0.82f, 0.2f);
         private readonly Color colorPurple = new Color(0.75f, 0.35f, 0.95f);
+        private readonly Color colorMystery = new Color(0.38f, 0.38f, 0.48f);
+        private readonly Color colorRainbow = new Color(1f, 0.7f, 0.15f);
         private readonly Color colorEmpty = new Color(0.25f, 0.25f, 0.25f);
 
         [MenuItem("Tools/Bus Jam/Level Editor Window", false, 1)]
@@ -216,6 +218,7 @@ namespace BusJam.Editor
             DrawBrushButton(BrushColor.Xanh, "Khách Xanh [ B ]", colorBlue);
             DrawBrushButton(BrushColor.Vang, "Khách Vàng [ Y ]", colorYellow);
             DrawBrushButton(BrushColor.Tim, "Khách Tím [ T ]", colorPurple);
+            DrawBrushButton(BrushColor.KhachAn, "Khách Ẩn [ M ]", colorMystery);
 
             EditorGUILayout.EndHorizontal();
 
@@ -358,6 +361,9 @@ namespace BusJam.Editor
             GUI.backgroundColor = colorPurple;
             if (GUILayout.Button("+ Xe Tím", GUILayout.Height(26))) danhSachXe.Add(LoaiMau.Tim);
 
+            GUI.backgroundColor = colorRainbow;
+            if (GUILayout.Button("+ Xe Cầu Vồng (VIP)", GUILayout.Height(26))) danhSachXe.Add(LoaiMau.CauVong);
+
             GUI.backgroundColor = Color.white;
             if (GUILayout.Button("Xóa Tất Cả Xe", GUILayout.Height(26), GUILayout.Width(110))) danhSachXe.Clear();
             EditorGUILayout.EndHorizontal();
@@ -422,7 +428,7 @@ namespace BusJam.Editor
             EditorGUILayout.LabelField("6. Kiểm Tra Tính Cân Bằng & Hợp Lệ (Validator)", EditorStyles.boldLabel);
 
             // Thống kê số lượng khách từng màu
-            int demDo = 0, demXanh = 0, demVang = 0, demTim = 0;
+            int demDo = 0, demXanh = 0, demVang = 0, demTim = 0, demKhachAn = 0;
             for (int r = 0; r < soHang; r++)
             {
                 for (int c = 0; c < soCot; c++)
@@ -432,11 +438,12 @@ namespace BusJam.Editor
                     else if (ch == 'B') demXanh++;
                     else if (ch == 'Y') demVang++;
                     else if (ch == 'T' || ch == 'P') demTim++;
+                    else if (ch == 'M' || ch == '?') demKhachAn++;
                 }
             }
 
             // Thống kê số ghế chở của xe bus từng màu (mỗi xe 3 chỗ)
-            int gheDo = 0, gheXanh = 0, gheVang = 0, gheTim = 0;
+            int gheDo = 0, gheXanh = 0, gheVang = 0, gheTim = 0, gheCauVong = 0;
             foreach (var xe in danhSachXe)
             {
                 switch (xe)
@@ -445,6 +452,7 @@ namespace BusJam.Editor
                     case LoaiMau.Xanh: gheXanh += 3; break;
                     case LoaiMau.Vang: gheVang += 3; break;
                     case LoaiMau.Tim: gheTim += 3; break;
+                    case LoaiMau.CauVong: gheCauVong += 3; break;
                 }
             }
 
@@ -453,6 +461,10 @@ namespace BusJam.Editor
             DrawColorStat("Xanh (B)", demXanh, gheXanh, colorBlue);
             DrawColorStat("Vàng (Y)", demVang, gheVang, colorYellow);
             DrawColorStat("Tím (T)", demTim, gheTim, colorPurple);
+            if (demKhachAn > 0 || gheCauVong > 0)
+            {
+                DrawColorStat("Ẩn / Cầu Vồng", demKhachAn, gheCauVong, colorRainbow);
+            }
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space(6);
@@ -830,6 +842,7 @@ namespace BusJam.Editor
                 case BrushColor.Xanh: return 'B';
                 case BrushColor.Vang: return 'Y';
                 case BrushColor.Tim: return 'T';
+                case BrushColor.KhachAn: return 'M';
                 default: return '0';
             }
         }
@@ -843,6 +856,8 @@ namespace BusJam.Editor
                 case 'Y': return colorYellow;
                 case 'T':
                 case 'P': return colorPurple;
+                case 'M':
+                case '?': return colorMystery;
                 default: return colorEmpty;
             }
         }
@@ -856,6 +871,8 @@ namespace BusJam.Editor
                 case 'Y': return "Y";
                 case 'T':
                 case 'P': return "T";
+                case 'M':
+                case '?': return "?";
                 default: return "·";
             }
         }
@@ -868,6 +885,7 @@ namespace BusJam.Editor
                 case LoaiMau.Xanh: return colorBlue;
                 case LoaiMau.Vang: return colorYellow;
                 case LoaiMau.Tim: return colorPurple;
+                case LoaiMau.CauVong: return colorRainbow;
                 default: return Color.white;
             }
         }

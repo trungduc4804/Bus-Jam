@@ -25,6 +25,7 @@ public class XeBus : MonoBehaviour
     public bool coHieuUngNhunPhanh = true; // Bật/tắt hiệu ứng nhún phanh
     private float brakeBounceTimer = 0f;
     private Vector3 gocScaleBanDau;
+    private Renderer[] busRenderers;
 
     public bool DangDungTrongBen => !dangVaoBen && !dangKhoiHanh; // Xe đã đỗ xong trong bến và chưa khởi hành
 
@@ -32,6 +33,30 @@ public class XeBus : MonoBehaviour
     {
         soGheTrong = soGhe;
         gocScaleBanDau = transform.localScale;
+        busRenderers = GetComponentsInChildren<Renderer>();
+    }
+
+    /// <summary>
+    /// Kích hoạt Booster biến chiếc xe hiện tại thành Xe Cầu Vồng (chở bất kỳ màu khách nào)
+    /// </summary>
+    public void BienThanhXeCauVong()
+    {
+        mauCuaXe = LoaiMau.CauVong;
+        transform.DOKill();
+        transform.DOPunchScale(Vector3.one * 0.25f, 0.45f, 10, 1f);
+
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayButtonClick();
+        }
+
+        // Quét ngay lập tức khách đang chờ ở slot
+        if (BenXe.Instance != null)
+        {
+            BenXe.Instance.QuetKhachDangCho();
+        }
+
+        Debug.Log("[XeBus] Xe bus đã biến hình thành XE CẦU VỒNG (Rainbow Bus)!");
     }
 
     // Kiểm tra xe còn chỗ trống cho khách mới bắt đầu đi bộ tới không
@@ -48,6 +73,19 @@ public class XeBus : MonoBehaviour
 
     void Update()
     {
+        // Hiệu ứng ánh sáng cầu vồng liên tục nếu là Xe Cầu Vồng
+        if (mauCuaXe == LoaiMau.CauVong && busRenderers != null)
+        {
+            Color rainbow = Color.HSVToRGB(Mathf.Repeat(Time.time * 0.75f, 1f), 0.85f, 1f);
+            foreach (var r in busRenderers)
+            {
+                if (r != null && r.material != null)
+                {
+                    r.material.color = rainbow;
+                }
+            }
+        }
+
         // Luôn xoay mặt xe hướng sang bên PHẢI (Y = gocXoayXe)
         Quaternion targetRotation = Quaternion.Euler(0, gocXoayXe, 0);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, tocDoXoay * Time.deltaTime);

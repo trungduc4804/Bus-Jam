@@ -44,7 +44,7 @@ namespace BusJam.Editor
 
         private void DrawQuickSummary(LevelData data)
         {
-            int demDo = 0, demXanh = 0, demVang = 0, demTim = 0;
+            int demDo = 0, demXanh = 0, demVang = 0, demTim = 0, demKhachAn = 0;
             if (data.banDoLuoii != null)
             {
                 foreach (string row in data.banDoLuoii)
@@ -57,11 +57,12 @@ namespace BusJam.Editor
                         else if (upper == 'B') demXanh++;
                         else if (upper == 'Y') demVang++;
                         else if (upper == 'T' || upper == 'P') demTim++;
+                        else if (upper == 'M' || upper == '?') demKhachAn++;
                     }
                 }
             }
 
-            int gheDo = 0, gheXanh = 0, gheVang = 0, gheTim = 0;
+            int gheDo = 0, gheXanh = 0, gheVang = 0, gheTim = 0, gheCauVong = 0;
             if (data.danhSachXeBus != null)
             {
                 foreach (var xe in data.danhSachXeBus)
@@ -72,27 +73,35 @@ namespace BusJam.Editor
                         case LoaiMau.Xanh: gheXanh += 3; break;
                         case LoaiMau.Vang: gheVang += 3; break;
                         case LoaiMau.Tim: gheTim += 3; break;
+                        case LoaiMau.CauVong: gheCauVong += 3; break;
                     }
                 }
             }
 
-            int tongKhach = demDo + demXanh + demVang + demTim;
+            int tongKhach = demDo + demXanh + demVang + demTim + demKhachAn;
             int tongXe = data.danhSachXeBus != null ? data.danhSachXeBus.Length : 0;
-            int tongGhe = gheDo + gheXanh + gheVang + gheTim;
+            int tongGhe = gheDo + gheXanh + gheVang + gheTim + gheCauVong;
 
             EditorGUILayout.BeginVertical("box");
             EditorGUILayout.LabelField("Thống Kê Màn Chơi", EditorStyles.boldLabel);
             EditorGUILayout.LabelField($"• Số ô chờ (Slots): {data.soSlotHangCho}");
-            EditorGUILayout.LabelField($"• Tổng hành khách: {tongKhach} (Đỏ: {demDo}, Xanh: {demXanh}, Vàng: {demVang}, Tím: {demTim})");
-            EditorGUILayout.LabelField($"• Tổng xe bus: {tongXe} xe ({tongGhe} chỗ ngồi)");
+            string infoKhach = $"• Tổng hành khách: {tongKhach} (Đỏ: {demDo}, Xanh: {demXanh}, Vàng: {demVang}, Tím: {demTim}";
+            if (demKhachAn > 0) infoKhach += $", Ẩn: {demKhachAn}";
+            infoKhach += ")";
+            EditorGUILayout.LabelField(infoKhach);
 
-            if (tongKhach == tongGhe && demDo == gheDo && demXanh == gheXanh && demVang == gheVang && demTim == gheTim)
+            string infoXe = $"• Tổng xe bus: {tongXe} xe ({tongGhe} chỗ ngồi";
+            if (gheCauVong > 0) infoXe += $", {gheCauVong / 3} Xe Cầu Vồng";
+            infoXe += ")";
+            EditorGUILayout.LabelField(infoXe);
+
+            if (tongKhach == tongGhe)
             {
                 EditorGUILayout.HelpBox("✓ Màn chơi cân bằng: Ghế xe khớp 100% với số khách!", MessageType.Info);
             }
             else
             {
-                EditorGUILayout.HelpBox("! Màn chơi chưa cân bằng số ghế và số khách!", MessageType.Warning);
+                EditorGUILayout.HelpBox($"! Màn chơi chưa cân bằng ({tongKhach} khách / {tongGhe} ghế)!", MessageType.Warning);
             }
 
             EditorGUILayout.EndVertical();
@@ -148,6 +157,8 @@ namespace BusJam.Editor
                 case 'Y': return new Color(0.98f, 0.82f, 0.2f);
                 case 'T':
                 case 'P': return new Color(0.75f, 0.35f, 0.95f);
+                case 'M':
+                case '?': return new Color(0.38f, 0.38f, 0.48f);
                 default: return new Color(0.25f, 0.25f, 0.25f);
             }
         }

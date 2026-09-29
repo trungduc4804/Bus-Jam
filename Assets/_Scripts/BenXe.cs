@@ -139,8 +139,10 @@ public class BenXe : MonoBehaviour
 
     public bool KtraVaChoLenXe(NhanVat khachHang)
     {
+        bool hopMau = (xeBusHienTai != null && (xeBusHienTai.mauCuaXe == LoaiMau.CauVong || khachHang.mauNV == xeBusHienTai.mauCuaXe));
+
         if (xeBusHienTai != null && xeBusHienTai.DangDungTrongBen 
-            && khachHang.mauNV == xeBusHienTai.mauCuaXe 
+            && hopMau 
             && xeBusHienTai.CoChoTrongChoKhach())
         {
             // Vô hiệu hóa lệnh Undo cho khách này vì đã lên xe thành công
@@ -191,8 +193,9 @@ public class BenXe : MonoBehaviour
 
             NhanVat khach = danhSachKhachDangCho[i];
             
-            // Nếu phát hiện khách hợp màu với xe mới đến
-            if (khach != null && khach.mauNV == xeBusHienTai.mauCuaXe)
+            // Nếu phát hiện khách hợp màu với xe mới đến (hoặc là Xe Cầu Vồng)
+            bool hopMau = (xeBusHienTai.mauCuaXe == LoaiMau.CauVong || (khach != null && khach.mauNV == xeBusHienTai.mauCuaXe));
+            if (khach != null && hopMau)
             {
                 KtraVaChoLenXe(khach);
             }

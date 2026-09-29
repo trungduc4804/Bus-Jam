@@ -2946,6 +2946,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 764294d0488b1424681081a65eb9502c, type: 2}
   - {fileID: 11400000, guid: 471ff5e1707fdf1448e05bb0acb29ad2, type: 2}
   - {fileID: 11400000, guid: 0624ace79df89544d88d37aec33eda98, type: 2}
+  - {fileID: 11400000, guid: 3281c3de27345224797c8a26fccd883d, type: 2}
+  - {fileID: 11400000, guid: db3ae8e19fafd514abba884310959c3d, type: 2}
   prefabKhachDo: {fileID: 7178499479155883018, guid: a3dfe160284f2c94abedbdbdc61c2088, type: 3}
   prefabKhachXanh: {fileID: 3144171013425706699, guid: b178bae60075437459860b8216ade87f, type: 3}
   prefabKhachVang: {fileID: 7033429260709195021, guid: 936d691bcf0f9c04eb11cf44ecab25d5, type: 3}
