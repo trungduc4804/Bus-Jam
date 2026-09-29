@@ -15,7 +15,14 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null) Instance = this;
+        if (Instance == null)
+        {
+            Instance = this;
+            if (GetComponent<BusJam.Commands.UndoManager>() == null)
+            {
+                gameObject.AddComponent<BusJam.Commands.UndoManager>();
+            }
+        }
         else Destroy(gameObject);
     }
 

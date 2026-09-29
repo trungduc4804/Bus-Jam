@@ -60,6 +60,12 @@ public class LevelManager : MonoBehaviour
         // 0. Dọn dẹp sạch các XeBus hoặc NhanVat rác kéo thả thủ công còn sót trong Scene
         XoaObjectRaoTrongScene();
 
+        // 0.1 Reset lịch sử hoàn tác (Undo) cho màn chơi mới
+        if (BusJam.Commands.UndoManager.Instance != null)
+        {
+            BusJam.Commands.UndoManager.Instance.ResetLuotUndo();
+        }
+
         // 1. Cài đặt số slot hàng chờ cho TouchManager theo LevelData
         if (TouchManager.Instance != null)
         {

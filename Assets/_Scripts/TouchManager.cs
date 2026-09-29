@@ -82,6 +82,10 @@ public class TouchManager : MonoBehaviour
                         // Phát âm thanh Pop khi chọn khách hợp lệ
                         if (AudioManager.Instance != null) AudioManager.Instance.PlayTapKhach();
 
+                        Vector3 viTriBanDau = nvBiCham.transform.position;
+                        Quaternion xoayBanDau = nvBiCham.transform.rotation;
+                        Vector3 viTriSlot = danhSachSlot[indexSlotTrong].position;
+
                         // 2. Lưu thông tin nhân vật vào slot
                         nhanVatTrongSlot[indexSlotTrong] = nvBiCham;
                         nvBiCham.slotIndexHienTai = indexSlotTrong;
@@ -90,8 +94,16 @@ public class TouchManager : MonoBehaviour
                         Collider col = nvBiCham.GetComponent<Collider>();
                         if (col != null) col.enabled = false;
 
-                        // 4. Ra lệnh cho nhân vật di chuyển tới slot
-                        nvBiCham.DiChuyenToi(danhSachSlot[indexSlotTrong].position);
+                        // 4. Đăng ký Command vào UndoManager phục vụ tính năng Hoàn tác
+                        if (BusJam.Commands.UndoManager.Instance != null)
+                        {
+                            BusJam.Commands.UndoManager.Instance.RegisterCommand(
+                                new BusJam.Commands.MovePassengerCommand(nvBiCham, viTriBanDau, xoayBanDau, indexSlotTrong, viTriSlot)
+                            );
+                        }
+
+                        // 5. Ra lệnh cho nhân vật di chuyển tới slot
+                        nvBiCham.DiChuyenToi(viTriSlot);
                     }
                     else
                     {

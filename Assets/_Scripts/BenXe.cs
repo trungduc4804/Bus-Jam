@@ -143,6 +143,12 @@ public class BenXe : MonoBehaviour
             && khachHang.mauNV == xeBusHienTai.mauCuaXe 
             && xeBusHienTai.CoChoTrongChoKhach())
         {
+            // Vô hiệu hóa lệnh Undo cho khách này vì đã lên xe thành công
+            if (BusJam.Commands.UndoManager.Instance != null)
+            {
+                BusJam.Commands.UndoManager.Instance.InvalidatePassenger(khachHang);
+            }
+
             // Đăng ký 1 chỗ trên xe cho khách đang di chuyển tới
             xeBusHienTai.DangKyKhachDiDen();
 

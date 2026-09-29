@@ -38,6 +38,8 @@ public class AudioManager : MonoBehaviour
     public AudioClip sfxThatBai;
     [Tooltip("Tiếng 'Click' ngắn khi bấm các nút trên giao diện")]
     public AudioClip sfxClickButton;
+    [Tooltip("Tiếng hoàn tác bước đi (Whoosh / Rewind)")]
+    public AudioClip sfxUndo;
 
     [Header("Cài Đặt Âm Lượng")]
     [Range(0f, 1f)] public float musicVolume = 0.7f;
@@ -222,4 +224,18 @@ public class AudioManager : MonoBehaviour
     }
 
     public void PlayButtonClick() => PlaySFX(sfxClickButton, 0.05f);
+
+    public void PlayUndo()
+    {
+        if (sfxUndo != null)
+        {
+            PlaySFX(sfxUndo, 0.05f);
+        }
+        else if (sfxTapKhach != null && sfxSource != null && !IsMuted)
+        {
+            // Hiệu ứng âm thanh đảo ngược vui tai khi hoàn tác
+            sfxSource.pitch = 1.35f;
+            sfxSource.PlayOneShot(sfxTapKhach, sfxVolume);
+        }
+    }
 }

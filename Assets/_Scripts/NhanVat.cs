@@ -1,4 +1,5 @@
 using UnityEngine;
+using DG.Tweening;
 
 public enum LoaiMau {
     Do,
@@ -23,6 +24,8 @@ public class NhanVat : MonoBehaviour
     private bool dangDiChuyen = false;
 
     public bool DangDiChuyen => dangDiChuyen;
+    public bool DangDiChuyenToiXe => dangDiChuyenToiXe;
+
     private void Start()
     {
         if (BenXe.Instance != null)
@@ -33,6 +36,8 @@ public class NhanVat : MonoBehaviour
 
     private void OnDestroy()
     {
+        transform.DOKill();
+
         if (BenXe.Instance != null)
         {
             BenXe.Instance.HuyDangKyNhanVat(this);
@@ -46,6 +51,36 @@ public class NhanVat : MonoBehaviour
     {
         diemDenXe = viTriXe;
         dangDiChuyenToiXe = true;
+    }
+
+    /// <summary>
+    /// Nhảy quay về vị trí ban đầu trên sân khi người chơi bấm nút Undo
+    /// </summary>
+    public void QuayVeViTriCu(Vector3 viTriCu, Quaternion xoayCu, System.Action onComplete = null)
+    {
+        transform.DOKill();
+        dangDiChuyen = false;
+        dangDiChuyenToiXe = false;
+        slotIndexHienTai = -1;
+
+        if (animator != null) animator.SetBool("isWalking", true);
+
+        // Hiệu ứng nhảy vồng ngược lại vị trí cũ
+        transform.DOJump(viTriCu, 0.8f, 1, 0.4f).SetEase(Ease.OutQuad).OnComplete(() =>
+        {
+            transform.position = viTriCu;
+            transform.rotation = xoayCu;
+            if (animator != null) animator.SetBool("isWalking", false);
+
+            // Bật lại Collider để người chơi có thể click chọn lại
+            Collider col = GetComponent<Collider>();
+            if (col != null) col.enabled = true;
+
+            onComplete?.Invoke();
+        });
+
+        // Xoay mặt trở lại hướng ban đầu
+        transform.DORotateQuaternion(xoayCu, 0.35f);
     }
 
     private void Update()
