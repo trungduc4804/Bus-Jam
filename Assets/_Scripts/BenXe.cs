@@ -53,9 +53,10 @@ public class BenXe : MonoBehaviour
         if (LevelManager.Instance != null && LevelManager.Instance.ConXeBusTrongQueue())
         {
             xeBusHienTai = LevelManager.Instance.SinhXeBusTiepTheo();
-            if (xeBusHienTai != null && viTriDoXe != null)
+            if (xeBusHienTai != null)
             {
-                xeBusHienTai.TienVaoBen(viTriDoXe.position); 
+                Vector3 diemDung = (viTriDoXe != null) ? viTriDoXe.position : new Vector3(0, 0, 5);
+                xeBusHienTai.TienVaoBen(diemDung); 
             }
         }
         else
@@ -146,12 +147,20 @@ public class BenXe : MonoBehaviour
 
     public bool KtraVaChoLenXe(NhanVat khachHang)
     {
+        if (khachHang == null) return false;
+
         bool hopMau = (xeBusHienTai != null && (xeBusHienTai.mauCuaXe == LoaiMau.CauVong || khachHang.mauNV == xeBusHienTai.mauCuaXe));
 
         if (xeBusHienTai != null && xeBusHienTai.DangDungTrongBen 
             && hopMau 
             && xeBusHienTai.CoChoTrongChoKhach())
         {
+            // Xóa ngay lập tức khỏi danh sách chờ để không bao giờ bị quét trùng lặp
+            if (danhSachKhachDangCho.Contains(khachHang))
+            {
+                danhSachKhachDangCho.Remove(khachHang);
+            }
+
             // Vô hiệu hóa lệnh Undo cho khách này vì đã lên xe thành công
             if (BusJam.Commands.UndoManager.Instance != null)
             {
@@ -192,8 +201,8 @@ public class BenXe : MonoBehaviour
     // Hàm này được gọi từ XeBus.cs khi xe mới vừa đỗ xong
     public void QuetKhachDangCho()
     {
-        // Phải lặp ngược danh sách (từ cuối lên đầu) khi có thao tác Xóa (Remove) phần tử
-        for (int i = danhSachKhachDangCho.Count - 1; i >= 0; i--)
+        // Duyệt theo thứ tự FIFO (người vào slot trước sẽ được lên xe trước)
+        for (int i = 0; i < danhSachKhachDangCho.Count; )
         {
             // Nếu xe hiện tại đã hết hoặc đang di chuyển thì dừng quét
             if (xeBusHienTai == null || !xeBusHienTai.DangDungTrongBen || !xeBusHienTai.CoChoTrongChoKhach()) break;
@@ -204,8 +213,20 @@ public class BenXe : MonoBehaviour
             bool hopMau = (xeBusHienTai.mauCuaXe == LoaiMau.CauVong || (khach != null && khach.mauNV == xeBusHienTai.mauCuaXe));
             if (khach != null && hopMau)
             {
+                // KtraVaChoLenXe tự động xóa khach khỏi danh sách, nên không tăng i
                 KtraVaChoLenXe(khach);
             }
+            else
+            {
+                i++;
+            }
+        }
+
+        // Sau khi quét xong toàn bộ khách trong hàng chờ:
+        // Nếu hàng chờ kín chỗ và chiếc xe này không đón được ai -> Kích hoạt kiểm tra Game Over!
+        if (TouchManager.Instance != null && TouchManager.Instance.TimSlotTrongDauTien() == -1)
+        {
+            TouchManager.Instance.KiemTraGameOverSauKhiCho();
         }
     }
 }

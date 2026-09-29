@@ -415,6 +415,14 @@ namespace BusJam.VFX
             }
         }
 
+        private void OnDestroy()
+        {
+            if (cameraShakeTweener != null && cameraShakeTweener.IsActive())
+            {
+                cameraShakeTweener.Kill();
+            }
+        }
+
         /// <summary>
         /// Rung nhẹ Camera chính và tự động hoàn trả về vị trí gốc chính xác 100%
         /// </summary>
@@ -423,6 +431,11 @@ namespace BusJam.VFX
             if (!batCameraShake || Camera.main == null) return;
 
             Camera cam = Camera.main;
+
+            if (viTriGocCamera == Vector3.zero)
+            {
+                viTriGocCamera = cam.transform.position;
+            }
 
             if (cameraShakeTweener != null && cameraShakeTweener.IsActive())
             {
@@ -445,7 +458,12 @@ namespace BusJam.VFX
             if (target == null) return;
 
             target.DOKill();
-            target.DOPunchRotation(new Vector3(0, 25f, 0), 0.3f, 12, 1f);
+            target.rotation = Quaternion.identity; // Đưa về góc xoay thẳng chuẩn ngay lập tức, không để lệch góc khi spam click
+            target.DOPunchRotation(new Vector3(0, 20f, 0), 0.22f, 10, 1f)
+                .OnComplete(() =>
+                {
+                    if (target != null) target.rotation = Quaternion.identity;
+                });
             CameraShake(0.08f, 0.04f);
         }
 

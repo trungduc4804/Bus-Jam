@@ -71,17 +71,30 @@ public class XeBus : MonoBehaviour
         soKhachDangDiDen++;
     }
 
+    private static MaterialPropertyBlock s_propBlock;
+    private static readonly int s_baseColorId = Shader.PropertyToID("_BaseColor");
+    private static readonly int s_colorId = Shader.PropertyToID("_Color");
+
+    private void OnDestroy()
+    {
+        transform.DOKill();
+    }
+
     void Update()
     {
-        // Hiệu ứng ánh sáng cầu vồng liên tục nếu là Xe Cầu Vồng
+        // Hiệu ứng ánh sáng cầu vồng liên tục nếu là Xe Cầu Vồng (Tối ưu Zero Allocation bằng MaterialPropertyBlock)
         if (mauCuaXe == LoaiMau.CauVong && busRenderers != null)
         {
+            if (s_propBlock == null) s_propBlock = new MaterialPropertyBlock();
             Color rainbow = Color.HSVToRGB(Mathf.Repeat(Time.time * 0.75f, 1f), 0.85f, 1f);
+            s_propBlock.SetColor(s_baseColorId, rainbow);
+            s_propBlock.SetColor(s_colorId, rainbow);
+
             foreach (var r in busRenderers)
             {
-                if (r != null && r.material != null)
+                if (r != null)
                 {
-                    r.material.color = rainbow;
+                    r.SetPropertyBlock(s_propBlock);
                 }
             }
         }
@@ -102,6 +115,12 @@ public class XeBus : MonoBehaviour
                 dangVaoBen = false; // Đã đỗ đúng vị trí, dừng lại đón khách
                 brakeBounceTimer = 0.2f; // Kích hoạt hiệu ứng nhún phanh dừng xe 0.2s
                 
+                // Cập nhật trạng thái Booster để nút UI bật sáng nếu có lượt
+                if (BusJam.Boosters.BoosterManager.Instance != null)
+                {
+                    BusJam.Boosters.BoosterManager.Instance.NotifyStateChanged();
+                }
+
                 // Hiệu ứng khói phanh xe bùng nở hai bên bánh xe & rung nhẹ
                 if (BusJam.VFX.VFXManager.Instance != null)
                 {
@@ -164,6 +183,12 @@ public class XeBus : MonoBehaviour
         if (soGheTrong <= 0)
         {
             dangKhoiHanh = true; 
+
+            // Cập nhật trạng thái Booster để nút UI mờ đi khi xe khởi hành
+            if (BusJam.Boosters.BoosterManager.Instance != null)
+            {
+                BusJam.Boosters.BoosterManager.Instance.NotifyStateChanged();
+            }
 
             // 1. Bắn chùm sao vàng rực rỡ chúc mừng xe hoàn thành
             if (BusJam.VFX.VFXManager.Instance != null)

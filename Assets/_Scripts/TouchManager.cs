@@ -43,8 +43,12 @@ public class TouchManager : MonoBehaviour
         }
     }
 
+    private Camera camChinh;
+    private bool dangKiemTraHangCho = false;
+
     private void Start()
     {
+        camChinh = Camera.main;
         if (nhanVatTrongSlot == null && danhSachSlot != null && danhSachSlot.Length > 0)
         {
             nhanVatTrongSlot = new NhanVat[danhSachSlot.Length];
@@ -55,9 +59,16 @@ public class TouchManager : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            if (Camera.main == null) return;
+            // Bỏ qua nếu chạm vào bất kỳ thành phần UI nào (Nút Setting, Undo, Booster, Panel Popup)
+            if (UnityEngine.EventSystems.EventSystem.current != null && UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            {
+                return;
+            }
 
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (camChinh == null) camChinh = Camera.main;
+            if (camChinh == null) return;
+
+            Ray ray = camChinh.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
             if (Physics.Raycast(ray, out hit))
@@ -113,9 +124,19 @@ public class TouchManager : MonoBehaviour
                     else
                     {
                         // Nếu hàng chờ đã đầy không còn slot nào trống
-                        Debug.Log("Game Over! Hàng chờ đã kín chỗ!");
+                        Debug.Log("[TouchManager] Hàng chờ đã kín chỗ!");
                         if (AudioManager.Instance != null) AudioManager.Instance.PlayHangChoDay();
-                        GameManager.Instance.LoseGame();
+                        if (BusJam.VFX.VFXManager.Instance != null) BusJam.VFX.VFXManager.Instance.CameraShake(0.12f, 0.06f);
+
+                        // Nếu không còn ai đang di chuyển -> Kiểm tra và xử thua ngay lập tức!
+                        if (!CoNhanVatDangDiChuyen())
+                        {
+                            ThucThiKiemTraGameOver();
+                        }
+                        else
+                        {
+                            KiemTraGameOverSauKhiCho();
+                        }
                     }
                 }
             }
@@ -228,28 +249,116 @@ public class TouchManager : MonoBehaviour
         return -1;
     }
 
-    // Giải phóng slot khi nhân vật lên xe bus thành công
+    // Giải phóng slot khi nhân vật lên xe bus thành công hoặc khi Hoàn tác (Undo)
     public void GiaiPhongSlot(int indexSlot)
     {
         if (nhanVatTrongSlot != null && indexSlot >= 0 && indexSlot < nhanVatTrongSlot.Length)
         {
             nhanVatTrongSlot[indexSlot] = null;
         }
+        CancelInvoke(nameof(ThucThiKiemTraGameOver));
     }
 
-    // Kiểm tra xem có nhân vật nào đang đứng chờ trong slot có thể lên xe không
+    // Kiểm tra xem có nhân vật nào đang đứng chờ trong slot có thể lên xe không (Chống đệ quy vô hạn)
     public void KiemTraNguoiTrongHangChoLenXe()
     {
-        if (nhanVatTrongSlot == null) return;
+        if (dangKiemTraHangCho || nhanVatTrongSlot == null) return;
+        dangKiemTraHangCho = true;
 
-        for (int i = 0; i < nhanVatTrongSlot.Length; i++)
+        bool coNguoiLenXe;
+        do
         {
-            NhanVat nv = nhanVatTrongSlot[i];
-            if (nv != null && !nv.DangDiChuyen)
+            coNguoiLenXe = false;
+            for (int i = 0; i < nhanVatTrongSlot.Length; i++)
             {
-                nv.ThuLenXeBus();
+                NhanVat nv = nhanVatTrongSlot[i];
+                if (nv != null && !nv.DangDiChuyen && !nv.DangDiChuyenToiXe)
+                {
+                    if (BenXe.Instance != null && BenXe.Instance.xeBusHienTai != null 
+                        && BenXe.Instance.xeBusHienTai.DangDungTrongBen 
+                        && BenXe.Instance.xeBusHienTai.CoChoTrongChoKhach())
+                    {
+                        bool hopMau = (BenXe.Instance.xeBusHienTai.mauCuaXe == LoaiMau.CauVong || nv.mauNV == BenXe.Instance.xeBusHienTai.mauCuaXe);
+                        if (hopMau)
+                        {
+                            nv.ThuLenXeBus();
+                            coNguoiLenXe = true;
+                            break; // Lặp lại từ đầu để duyệt theo đúng thứ tự slot ưu tiên
+                        }
+                    }
+                }
+            }
+        } while (coNguoiLenXe);
+
+        dangKiemTraHangCho = false;
+    }
+
+    /// <summary>
+    /// Kiểm tra trạng thái thua cuộc một cách chuẩn xác:
+    /// Xử thua khi hàng chờ đầy, không ai có thể lên xe, không còn người di chuyển.
+    /// Undo và Booster chỉ là công cụ hỗ trợ người chơi chủ động bấm, không ép buộc phải dùng hết mới được thua.
+    /// </summary>
+    public void KiemTraGameOverSauKhiCho()
+    {
+        CancelInvoke(nameof(ThucThiKiemTraGameOver));
+        Invoke(nameof(ThucThiKiemTraGameOver), 0.4f);
+    }
+
+    public void ThucThiKiemTraGameOver()
+    {
+        // 1. Nếu còn slot trống -> Chưa thua
+        if (TimSlotTrongDauTien() != -1) return;
+
+        // 2. Nếu có bất kỳ nhân vật nào đang di chuyển -> Đợi họ đến nơi
+        if (CoNhanVatDangDiChuyen())
+        {
+            CancelInvoke(nameof(ThucThiKiemTraGameOver));
+            Invoke(nameof(ThucThiKiemTraGameOver), 0.3f);
+            return;
+        }
+
+        // 3. Nếu xe bus hiện tại đang tiến vào bến -> Đợi xe đỗ hẳn để đón khách
+        if (BenXe.Instance != null && BenXe.Instance.xeBusHienTai != null && !BenXe.Instance.xeBusHienTai.DangDungTrongBen)
+        {
+            CancelInvoke(nameof(ThucThiKiemTraGameOver));
+            Invoke(nameof(ThucThiKiemTraGameOver), 0.3f);
+            return;
+        }
+
+        // 4. Nếu xe bus hiện tại có thể đón bất kỳ ai trong hàng chờ -> Chưa thua
+        if (BenXe.Instance != null && BenXe.Instance.xeBusHienTai != null && BenXe.Instance.xeBusHienTai.DangDungTrongBen)
+        {
+            LoaiMau mauXe = BenXe.Instance.xeBusHienTai.mauCuaXe;
+            if (mauXe == LoaiMau.CauVong) return;
+
+            if (nhanVatTrongSlot != null)
+            {
+                foreach (var nv in nhanVatTrongSlot)
+                {
+                    if (nv != null && nv.mauNV == mauXe) return;
+                }
             }
         }
+
+        // 5. Thật sự bế tắc (Kín chỗ, không ai lên xe được, không có xe phù hợp) -> Game Over!
+        Debug.Log("[TouchManager] Game Over! Hàng chờ kín chỗ và không còn bước đi hợp lệ!");
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.LoseGame();
+        }
+    }
+
+    public bool CoNhanVatDangDiChuyen()
+    {
+        if (BenXe.Instance != null && BenXe.Instance.danhSachTatCaKhach != null)
+        {
+            for (int i = 0; i < BenXe.Instance.danhSachTatCaKhach.Count; i++)
+            {
+                var nv = BenXe.Instance.danhSachTatCaKhach[i];
+                if (nv != null && (nv.DangDiChuyen || nv.DangDiChuyenToiXe)) return true;
+            }
+        }
+        return false;
     }
 
     /// <summary>

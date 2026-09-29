@@ -59,9 +59,10 @@ public class AudioManager : MonoBehaviour
             KhoiTaoAudioSources();
             TaiCaiDatAmThanh();
         }
-        else
+        else if (Instance != this)
         {
             Destroy(gameObject);
+            return;
         }
     }
 

@@ -24,8 +24,8 @@ public class NhanVat : MonoBehaviour
     private Renderer[] allRenderers;
 
     [Header("Cấu hình kiểm tra đường bị chặn")]
-    public float khoangCachKiemTra = 1.5f; // Khoảng cách quét nhân vật phía trước
-    public float banKinhKiemTra = 0.4f;   // Bán kính quét (SphereCast) để tránh lọt khe
+    public float khoangCachKiemTra = 15f; // Khoảng cách quét nhân vật phía trước tới tận đường lớn
+    public float banKinhKiemTra = 0.45f;   // Bán kính quét (SphereCast) để tránh lọt khe
 
     [HideInInspector]
     public int slotIndexHienTai = -1;
@@ -35,6 +35,20 @@ public class NhanVat : MonoBehaviour
 
     public bool DangDiChuyen => dangDiChuyen;
     public bool DangDiChuyenToiXe => dangDiChuyenToiXe;
+
+    private static Camera s_mainCam;
+    private float mysteryCheckTimer = 0f;
+
+    private void Awake()
+    {
+        if (khoangCachKiemTra < 10f) khoangCachKiemTra = 15f;
+        if (banKinhKiemTra < 0.45f) banKinhKiemTra = 0.45f;
+
+        if (BenXe.Instance != null)
+        {
+            BenXe.Instance.DangKyNhanVat(this);
+        }
+    }
 
     private void Start()
     {
@@ -342,21 +356,31 @@ public class NhanVat : MonoBehaviour
 
     private void LateUpdate()
     {
-        // Billboard: Dấu ? luôn xoay trực diện về Camera chính để người chơi nhìn rõ nhất
-        if (iconChamHoi != null && Camera.main != null)
+        // Billboard: Dấu ? luôn xoay trực diện về Camera chính để người chơi nhìn rõ nhất (Cached Camera)
+        if (iconChamHoi != null)
         {
-            iconChamHoi.transform.rotation = Camera.main.transform.rotation;
+            if (s_mainCam == null) s_mainCam = Camera.main;
+            if (s_mainCam != null)
+            {
+                iconChamHoi.transform.rotation = s_mainCam.transform.rotation;
+            }
         }
     }
 
     private void Update()
     {
         // 0. Nếu là Khách Ẩn và đường thoát phía trước đã thông thoáng -> Tự động hé lộ màu thật!
+        // Quét chu kỳ 0.1s thay vì 60fps để tối ưu CPU tối đa
         if (laKhachAn && !dangDiChuyen && !dangDiChuyenToiXe)
         {
-            if (KiemTraDuongThoat())
+            mysteryCheckTimer -= Time.deltaTime;
+            if (mysteryCheckTimer <= 0f)
             {
-                HeLoMauThat();
+                mysteryCheckTimer = 0.1f;
+                if (KiemTraDuongThoat())
+                {
+                    HeLoMauThat();
+                }
             }
         }
 
@@ -432,6 +456,14 @@ public class NhanVat : MonoBehaviour
                     TouchManager.Instance.KiemTraNguoiTrongHangChoLenXe();
                 }
             }
+            else
+            {
+                // Nếu không lên được xe, kiểm tra xem toàn bộ hàng chờ đã kín chỗ và bế tắc chưa
+                if (TouchManager.Instance != null)
+                {
+                    TouchManager.Instance.KiemTraGameOverSauKhiCho();
+                }
+            }
         }
     }
 
@@ -448,18 +480,52 @@ public class NhanVat : MonoBehaviour
         }
     }
 
+    // Static buffer để loại bỏ hoàn toàn GC Allocations từ SphereCastAll (Zero-Allocation)
+    private static readonly RaycastHit[] s_hitsBuffer = new RaycastHit[16];
+
     // Hàm kiểm tra xem đường đi có bị chặn bởi nhân vật khác không
     public bool KiemTraDuongThoat()
     {
-        // Nhấc vị trí gốc bắn tia lên cao 0.5f để không bị đụng mặt đất
-        Vector3 viTriBan = transform.position + (Vector3.up * 0.5f); 
-        Vector3 huongBan = transform.forward; // Hướng mặt trước của nhân vật
-
-        // Sử dụng SphereCastAll để lấy TẤT CẢ các vật thể nằm trên luồng quét (tránh bị cản bởi mặt đất hay object khác)
-        RaycastHit[] hits = Physics.SphereCastAll(viTriBan, banKinhKiemTra, huongBan, khoangCachKiemTra);
-
-        foreach (RaycastHit hit in hits)
+        // 1. KIỂM TRA TỌA ĐỘ TRỰC TIẾP (Geometric Grid Check - Hoàn toàn không phụ thuộc Physics, chống 100% lọt khe khi spam click)
+        // Trong game, đường thoát ra bến xe luôn nằm ở hướng +Z.
+        // Bất kỳ ai đứng ở phía trước (+Z) trên cùng một cột X đều là chướng ngại vật chặn đường ra bãi.
+        if (BenXe.Instance != null && BenXe.Instance.danhSachTatCaKhach != null)
         {
+            Vector3 myPos = transform.position;
+            var dsKhach = BenXe.Instance.danhSachTatCaKhach;
+            for (int i = 0; i < dsKhach.Count; i++)
+            {
+                NhanVat nvKhac = dsKhach[i];
+                if (nvKhac == null || nvKhac == this || !nvKhac.gameObject.activeInHierarchy) continue;
+
+                // Nếu người khác đã vào slot hoặc đang di chuyển thì không còn đứng cản trên sân nữa
+                if (nvKhac.slotIndexHienTai != -1 || nvKhac.DangDiChuyen || nvKhac.DangDiChuyenToiXe) continue;
+
+                Vector3 posKhac = nvKhac.transform.position;
+                float diffZ = posKhac.z - myPos.z;
+
+                // Nếu người khác đứng ở phía trước theo trục Z (hướng ra đường)
+                if (diffZ > 0.35f)
+                {
+                    // Kiểm tra xem có nằm trên cùng làn/cột X không (ngưỡng 0.85m là nửa khoảng cách ô lưới)
+                    float diffX = Mathf.Abs(posKhac.x - myPos.x);
+                    if (diffX < 0.85f)
+                    {
+                        return false; // Bị chặn chắc chắn 100% bởi người đứng phía trước cùng cột!
+                    }
+                }
+            }
+        }
+
+        // 2. KIỂM TRA VẬT LÝ BỔ SUNG (SphereCastNonAlloc dọc trục Z để an toàn kép)
+        Vector3 viTriBan = transform.position + (Vector3.up * 0.5f); 
+        Vector3 huongBan = Vector3.forward;
+
+        int hitCount = Physics.SphereCastNonAlloc(viTriBan, banKinhKiemTra, huongBan, s_hitsBuffer, khoangCachKiemTra);
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            RaycastHit hit = s_hitsBuffer[i];
             if (hit.collider == null) continue;
             // Bỏ qua chính bản thân nhân vật này
             if (hit.collider.gameObject == gameObject) continue;
@@ -474,7 +540,11 @@ public class NhanVat : MonoBehaviour
                     continue;
                 }
 
-                return false; // Bị chặn bởi người đứng yên phía trước
+                // Kiểm tra xem nhân vật khác có thật sự nằm ở phía trước theo trục Z không
+                if (nvKhac.transform.position.z > transform.position.z + 0.35f)
+                {
+                    return false; // Bị chặn bởi người đứng yên phía trước
+                }
             }
         }
         
@@ -486,7 +556,7 @@ public class NhanVat : MonoBehaviour
     {
         Vector3 viTriBan = transform.position + (Vector3.up * 0.5f);
         Gizmos.color = KiemTraDuongThoat() ? Color.green : Color.red;
-        Gizmos.DrawRay(viTriBan, transform.forward * khoangCachKiemTra);
-        Gizmos.DrawWireSphere(viTriBan + transform.forward * khoangCachKiemTra, banKinhKiemTra);
+        Gizmos.DrawRay(viTriBan, Vector3.forward * khoangCachKiemTra);
+        Gizmos.DrawWireSphere(viTriBan + Vector3.forward * khoangCachKiemTra, banKinhKiemTra);
     }
 }

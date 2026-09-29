@@ -130,8 +130,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NhanVat
   mauNV: 1
   tocDo: 5
-  khoangCachKiemTra: 2
-  banKinhKiemTra: 0.4
+  khoangCachKiemTra: 15
+  banKinhKiemTra: 0.45
   slotIndexHienTai: -1
   animator: {fileID: 6366972336271552259}
 --- !u!1001 &663878742119338642

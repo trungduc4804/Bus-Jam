@@ -170,9 +170,16 @@ public class LevelManager : MonoBehaviour
                     {
                         GameObject objKhach = Instantiate(prefabKhach, toaDo, Quaternion.identity);
                         NhanVat nv = objKhach.GetComponent<NhanVat>();
-                        if (nv != null && laKhachAn)
+                        if (nv != null)
                         {
-                            nv.CaiDatKhachAn(mauThucTe);
+                            if (laKhachAn)
+                            {
+                                nv.CaiDatKhachAn(mauThucTe);
+                            }
+                            if (BenXe.Instance != null)
+                            {
+                                BenXe.Instance.DangKyNhanVat(nv);
+                            }
                         }
                     }
 

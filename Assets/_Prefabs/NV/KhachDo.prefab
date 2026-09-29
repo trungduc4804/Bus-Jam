@@ -132,8 +132,8 @@ MonoBehaviour:
   tocDo: 5
   laKhachAn: 0
   mauThatSu: 0
-  khoangCachKiemTra: 2
-  banKinhKiemTra: 0.4
+  khoangCachKiemTra: 15
+  banKinhKiemTra: 0.45
   slotIndexHienTai: -1
   animator: {fileID: 8723205665620836928}
 --- !u!1001 &2910900942830436305
