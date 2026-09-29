@@ -104,6 +104,9 @@ public class TouchManager : MonoBehaviour
 
                         // 5. Ra lệnh cho nhân vật di chuyển tới slot
                         nvBiCham.DiChuyenToi(viTriSlot);
+
+                        // 6. Quét ngay các khách ẩn trong bãi để hé lộ người vừa được thông đường!
+                        KiemTraVaHeLoKhachAnSauKhiNguoiDi();
                     }
                     else
                     {
@@ -243,6 +246,27 @@ public class TouchManager : MonoBehaviour
             if (nv != null && !nv.DangDiChuyen)
             {
                 nv.ThuLenXeBus();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Quét ngay lập tức các khách ẩn trong sân khi có một người vừa rời vị trí
+    /// </summary>
+    public void KiemTraVaHeLoKhachAnSauKhiNguoiDi()
+    {
+        if (BenXe.Instance != null && BenXe.Instance.danhSachTatCaKhach != null)
+        {
+            for (int i = 0; i < BenXe.Instance.danhSachTatCaKhach.Count; i++)
+            {
+                NhanVat nv = BenXe.Instance.danhSachTatCaKhach[i];
+                if (nv != null && nv.laKhachAn && !nv.DangDiChuyen && nv.slotIndexHienTai == -1)
+                {
+                    if (nv.KiemTraDuongThoat())
+                    {
+                        nv.HeLoMauThat();
+                    }
+                }
             }
         }
     }

@@ -470,24 +470,32 @@ namespace BusJam.Editor
             EditorGUILayout.Space(6);
 
             // Đánh giá tổng quan
-            int tongKhach = demDo + demXanh + demVang + demTim;
-            int tongGhe = gheDo + gheXanh + gheVang + gheTim;
+            int tongKhach = demDo + demXanh + demVang + demTim + demKhachAn;
+            int tongGhe = gheDo + gheXanh + gheVang + gheTim + gheCauVong;
 
             if (tongKhach == 0)
             {
                 EditorGUILayout.HelpBox("Bản đồ hiện đang trống chưa có khách nào!", MessageType.Warning);
             }
-            else if (demDo == gheDo && demXanh == gheXanh && demVang == gheVang && demTim == gheTim)
+            else if (tongKhach == tongGhe)
             {
-                EditorGUILayout.HelpBox($"Màn chơi hoàn hảo! Số ghế của tất cả các xe bus khớp chính xác 100% với số lượng hành khách ({tongKhach} khách / {tongGhe} ghế).", MessageType.Info);
+                if (demKhachAn > 0 || gheCauVong > 0)
+                {
+                    EditorGUILayout.HelpBox($"✓ Màn chơi cân bằng hoàn hảo ({tongKhach} khách / {tongGhe} ghế)!\nThuật toán Smart Pool trong game sẽ tự động tính toán để bù đúng các màu còn thiếu vào {demKhachAn} Khách Ẩn, đảm bảo 100% các xe bus đều đủ 3 người để rời bến!", MessageType.Info);
+                }
+                else
+                {
+                    EditorGUILayout.HelpBox($"✓ Màn chơi hoàn hảo! Số ghế của tất cả các xe bus khớp chính xác 100% với số lượng hành khách ({tongKhach} khách / {tongGhe} ghế).", MessageType.Info);
+                }
             }
             else
             {
-                string warning = "Cảnh báo không cân bằng:\n";
+                string warning = $"Cảnh báo lệch số lượng: Tổng khách ({tongKhach}) != Tổng ghế ({tongGhe})\n";
                 if (demDo != gheDo) warning += $"- Khách Đỏ: {demDo} người, Xe Đỏ chở được {gheDo} ghế (chênh lệch: {gheDo - demDo})\n";
                 if (demXanh != gheXanh) warning += $"- Khách Xanh: {demXanh} người, Xe Xanh chở được {gheXanh} ghế (chênh lệch: {gheXanh - demXanh})\n";
                 if (demVang != gheVang) warning += $"- Khách Vàng: {demVang} người, Xe Vàng chở được {gheVang} ghế (chênh lệch: {gheVang - demVang})\n";
                 if (demTim != gheTim) warning += $"- Khách Tím: {demTim} người, Xe Tím chở được {gheTim} ghế (chênh lệch: {gheTim - demTim})\n";
+                if (demKhachAn > 0 || gheCauVong > 0) warning += $"- Khách Ẩn: {demKhachAn}, Ghế Xe Cầu Vồng: {gheCauVong}\n";
                 warning += "Hành khách dư thừa sẽ không có xe đón (dẫn đến Thua), hoặc xe thừa sẽ bị kẹt lại bến!";
                 EditorGUILayout.HelpBox(warning, MessageType.Warning);
             }

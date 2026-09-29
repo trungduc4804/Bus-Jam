@@ -37,7 +37,7 @@ public class NhanVat : MonoBehaviour
     private void Start()
     {
         allRenderers = GetComponentsInChildren<Renderer>();
-        if (allRenderers != null && allRenderers.Length > 0 && allRenderers[0] != null && allRenderers[0].material != null)
+        if (!laKhachAn && allRenderers != null && allRenderers.Length > 0 && allRenderers[0] != null && allRenderers[0].material != null)
         {
             mauGocRenderer = allRenderers[0].material.color;
         }
@@ -110,40 +110,143 @@ public class NhanVat : MonoBehaviour
     {
         laKhachAn = true;
         mauThatSu = mauThat;
+        mauNV = mauThat;
         ApDungGiaoDienKhachAn();
     }
 
-    private void ApDungGiaoDienKhachAn()
+    public static Color LayMauRGB(LoaiMau mau)
     {
-        if (allRenderers == null) allRenderers = GetComponentsInChildren<Renderer>();
+        switch (mau)
+        {
+            case LoaiMau.Do: return new Color(1f, 0.05f, 0.05f, 1f);
+            case LoaiMau.Xanh: return new Color(0f, 0.81f, 0.82f, 1f);
+            case LoaiMau.Vang: return new Color(1f, 0.92f, 0.02f, 1f);
+            case LoaiMau.Tim: return new Color(1f, 0f, 1f, 1f);
+            default: return Color.white;
+        }
+    }
+
+    public void DatMauRenderer(Color mau)
+    {
+        if (allRenderers == null || allRenderers.Length == 0)
+        {
+            allRenderers = GetComponentsInChildren<Renderer>();
+        }
+
         if (allRenderers != null)
         {
             foreach (var r in allRenderers)
             {
                 if (r != null && r.material != null)
                 {
-                    r.material.color = new Color(0.18f, 0.18f, 0.22f);
+                    r.material.color = mau;
+                    if (r.material.HasProperty("_BaseColor"))
+                    {
+                        r.material.SetColor("_BaseColor", mau);
+                    }
+                    if (r.material.HasProperty("_Color"))
+                    {
+                        r.material.SetColor("_Color", mau);
+                    }
                 }
             }
         }
+    }
 
-        // Tạo icon "?" lơ lửng trên đầu
+    private static Sprite s_badgeSprite;
+
+    private static Sprite TaoSpriteHuyHieuTron()
+    {
+        if (s_badgeSprite != null) return s_badgeSprite;
+
+        int size = 128;
+        Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        tex.filterMode = FilterMode.Bilinear;
+        tex.wrapMode = TextureWrapMode.Clamp;
+        Vector2 center = new Vector2(size / 2f, size / 2f);
+        float radius = size / 2f - 3f;
+        float borderThickness = 9f;
+        float innerRadius = radius - borderThickness;
+
+        Color colorVien = new Color(0.12f, 0.12f, 0.14f, 1f); // Viền đen đậm nổi bật
+        Color colorNenTop = new Color(1f, 0.96f, 0.35f, 1f);  // Vàng sáng phía trên
+        Color colorNenBot = new Color(1f, 0.72f, 0.02f, 1f);  // Vàng cam rực rỡ phía dưới
+
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float dist = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), center);
+                if (dist > radius + 1f)
+                {
+                    tex.SetPixel(x, y, Color.clear);
+                }
+                else if (dist > radius)
+                {
+                    float alpha = Mathf.Clamp01(radius + 1f - dist);
+                    tex.SetPixel(x, y, new Color(colorVien.r, colorVien.g, colorVien.b, alpha));
+                }
+                else if (dist > innerRadius)
+                {
+                    tex.SetPixel(x, y, colorVien);
+                }
+                else
+                {
+                    float t = (float)y / size;
+                    Color colNen = Color.Lerp(colorNenBot, colorNenTop, t);
+                    tex.SetPixel(x, y, colNen);
+                }
+            }
+        }
+        tex.Apply();
+        s_badgeSprite = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
+        return s_badgeSprite;
+    }
+
+    private void ApDungGiaoDienKhachAn()
+    {
+        // 1. Đổi màu nhân vật thành màu xám đen huyền bí
+        DatMauRenderer(new Color(0.18f, 0.18f, 0.22f, 1f));
+
+        // 2. Tạo Huy hiệu Dấu Hỏi Vàng Rực Rỡ lơ lửng trên đầu
         if (iconChamHoi == null)
         {
-            iconChamHoi = new GameObject("MysteryQuestionMark");
+            iconChamHoi = new GameObject("MysteryBadge");
             iconChamHoi.transform.SetParent(transform, false);
-            iconChamHoi.transform.localPosition = new Vector3(0, 1.8f, 0);
+            iconChamHoi.transform.localPosition = new Vector3(0, 2.3f, 0);
 
-            TextMesh tm = iconChamHoi.AddComponent<TextMesh>();
+            // Tấm nền tròn màu vàng cam viền đen
+            GameObject bgObj = new GameObject("BadgeBg");
+            bgObj.transform.SetParent(iconChamHoi.transform, false);
+            bgObj.transform.localScale = new Vector3(0.6f, 0.6f, 1f);
+            SpriteRenderer sr = bgObj.AddComponent<SpriteRenderer>();
+            sr.sprite = TaoSpriteHuyHieuTron();
+            sr.sortingOrder = 15;
+
+            // Chữ dấu hỏi "?" đen đậm to bản, sắc nét
+            GameObject textObj = new GameObject("QuestionMarkText");
+            textObj.transform.SetParent(iconChamHoi.transform, false);
+            textObj.transform.localPosition = new Vector3(0, 0, -0.05f);
+
+            TextMesh tm = textObj.AddComponent<TextMesh>();
             tm.text = "?";
-            tm.fontSize = 50;
-            tm.characterSize = 0.12f;
-            tm.color = new Color(1f, 0.85f, 0.2f);
+            tm.fontSize = 80;
+            tm.fontStyle = FontStyle.Bold;
+            tm.characterSize = 0.16f;
+            tm.color = new Color(0.12f, 0.12f, 0.14f, 1f); // Màu đen tuyền đậm tương phản cực mạnh
             tm.alignment = TextAlignment.Center;
             tm.anchor = TextAnchor.MiddleCenter;
 
-            // Hiệu ứng nhấp nhô lơ lửng
-            iconChamHoi.transform.DOLocalMoveY(2.05f, 0.65f).SetLoops(-1, LoopType.Yoyo).SetEase(Ease.InOutSine);
+            MeshRenderer mrText = textObj.GetComponent<MeshRenderer>();
+            if (mrText != null)
+            {
+                mrText.sortingLayerID = sr.sortingLayerID;
+                mrText.sortingOrder = sr.sortingOrder + 1;
+            }
+
+            // Hiệu ứng nhấp nhô lơ lửng & đập nhẹ (Floating & Pulsing)
+            iconChamHoi.transform.DOLocalMoveY(2.48f, 0.65f).SetLoops(-1, LoopType.Yoyo).SetEase(Ease.InOutSine);
+            iconChamHoi.transform.DOScale(Vector3.one * 1.12f, 0.65f).SetLoops(-1, LoopType.Yoyo).SetEase(Ease.InOutSine);
         }
     }
 
@@ -156,36 +259,60 @@ public class NhanVat : MonoBehaviour
         laKhachAn = false;
         mauNV = mauThatSu;
 
-        // Xóa icon dấu hỏi
+        // 1. Xóa icon dấu hỏi với hiệu ứng Pop-out biến mất
         if (iconChamHoi != null)
         {
             iconChamHoi.transform.DOKill();
-            Destroy(iconChamHoi);
+            iconChamHoi.transform.DOScale(Vector3.zero, 0.2f).SetEase(Ease.InBack).OnComplete(() =>
+            {
+                if (iconChamHoi != null) Destroy(iconChamHoi);
+            });
         }
 
-        // Khôi phục màu sắc gốc của nhân vật
-        if (allRenderers != null)
+        // 2. Khôi phục Material gốc từ Prefab (nếu có)
+        if (LevelManager.Instance != null)
         {
-            foreach (var r in allRenderers)
+            GameObject prefabKhach = LevelManager.Instance.GetPrefabKhachByMau(mauThatSu);
+            if (prefabKhach != null)
             {
-                if (r != null && r.material != null)
+                Renderer prefabRenderer = prefabKhach.GetComponentInChildren<Renderer>();
+                if (prefabRenderer != null && prefabRenderer.sharedMaterial != null)
                 {
-                    r.material.color = mauGocRenderer;
+                    if (allRenderers == null || allRenderers.Length == 0) allRenderers = GetComponentsInChildren<Renderer>();
+                    foreach (var r in allRenderers)
+                    {
+                        if (r != null)
+                        {
+                            r.material = prefabRenderer.sharedMaterial;
+                        }
+                    }
                 }
             }
         }
 
-        // Hiệu ứng Pop nảy người bất ngờ (Juice)
+        // Đảm bảo cả thuộc tính màu RGB chuẩn (_BaseColor & _Color) được áp dụng
+        DatMauRenderer(LayMauRGB(mauThatSu));
+
+        // 3. Hiệu ứng Pop nảy người bất ngờ (Juice)
         transform.DOKill();
         transform.DOPunchScale(Vector3.one * 0.35f, 0.35f, 10, 1f);
 
-        // Phát âm thanh Pop hé lộ
+        // 4. Phát âm thanh Pop hé lộ
         if (AudioManager.Instance != null)
         {
             AudioManager.Instance.PlayTapKhach();
         }
 
         Debug.Log($"[Khách Ẩn] Đã hé lộ màu thật: {mauNV} ({gameObject.name})");
+    }
+
+    private void LateUpdate()
+    {
+        // Billboard: Dấu ? luôn xoay trực diện về Camera chính để người chơi nhìn rõ nhất
+        if (iconChamHoi != null && Camera.main != null)
+        {
+            iconChamHoi.transform.rotation = Camera.main.transform.rotation;
+        }
     }
 
     private void Update()
@@ -254,6 +381,12 @@ public class NhanVat : MonoBehaviour
 
     public void ThuLenXeBus()
     {
+        // Đảm bảo không còn là khách ẩn khi lên xe
+        if (laKhachAn)
+        {
+            HeLoMauThat();
+        }
+
         if (BenXe.Instance != null)
         {
             bool batDauLenXe = BenXe.Instance.KtraVaChoLenXe(this);
@@ -273,6 +406,12 @@ public class NhanVat : MonoBehaviour
     {
         diemDen = viTriMoi; // Ghi nhớ tọa độ đích
         dangDiChuyen = true; // Bắt đầu cho phép di chuyển trong hàm Update
+
+        // Nếu là khách ẩn thì khi bước ra slot bắt buộc hé lộ ngay lập tức!
+        if (laKhachAn)
+        {
+            HeLoMauThat();
+        }
     }
 
     // Hàm kiểm tra xem đường đi có bị chặn bởi nhân vật khác không
@@ -287,6 +426,7 @@ public class NhanVat : MonoBehaviour
 
         foreach (RaycastHit hit in hits)
         {
+            if (hit.collider == null) continue;
             // Bỏ qua chính bản thân nhân vật này
             if (hit.collider.gameObject == gameObject) continue;
 
@@ -294,8 +434,13 @@ public class NhanVat : MonoBehaviour
             NhanVat nvKhac = hit.collider.GetComponent<NhanVat>();
             if (nvKhac != null)
             {
-                Debug.Log($"Nhân vật {gameObject.name} ({mauNV}) bị chặn bởi {nvKhac.gameObject.name}!");
-                return false; // Bị chặn, không được đi
+                // Nếu nhân vật khác đang di chuyển ra slot hoặc đã ở trong slot, không tính là đang chặn
+                if (nvKhac.slotIndexHienTai != -1 || nvKhac.DangDiChuyen || nvKhac.DangDiChuyenToiXe)
+                {
+                    continue;
+                }
+
+                return false; // Bị chặn bởi người đứng yên phía trước
             }
         }
         

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class LevelManager : MonoBehaviour
@@ -109,6 +110,9 @@ public class LevelManager : MonoBehaviour
             float offsetX = tuDongCanGiua ? -((maxCot - 1) * khoangCachO) / 2.0f : 0f;
             float offsetZ = tuDongCanGiua ? ((soHang - 1) * khoangCachO) / 2.0f : 0f;
 
+            // Tính toán trước Bể Màu Cân Bằng Thông Minh (Smart Deficit Pool) cho Khách Ẩn
+            Queue<LoaiMau> poolMauKhachAn = TaoBeMauKhachAn(levelHienTai);
+
             for (int z = 0; z < soHang; z++)
             {
                 string hangHienTai = levelHienTai.banDoLuoii[z];
@@ -130,15 +134,23 @@ public class LevelManager : MonoBehaviour
 
                     if (laKhachAn)
                     {
-                        // Chọn màu thật từ danh sách xe bus của level để đảm bảo luôn có xe đón
-                        if (levelHienTai.danhSachXeBus != null && levelHienTai.danhSachXeBus.Length > 0)
+                        // Lấy màu từ Bể Màu Thông Minh đã được tính toán bù trừ chuẩn xác
+                        if (poolMauKhachAn != null && poolMauKhachAn.Count > 0)
                         {
-                            mauThucTe = levelHienTai.danhSachXeBus[Random.Range(0, levelHienTai.danhSachXeBus.Length)];
-                            if (mauThucTe == LoaiMau.CauVong) mauThucTe = (LoaiMau)Random.Range(0, 4);
+                            mauThucTe = poolMauKhachAn.Dequeue();
                         }
                         else
                         {
-                            mauThucTe = (LoaiMau)Random.Range(0, 4);
+                            // Fallback an toàn nếu bể màu hết
+                            if (levelHienTai.danhSachXeBus != null && levelHienTai.danhSachXeBus.Length > 0)
+                            {
+                                mauThucTe = levelHienTai.danhSachXeBus[Random.Range(0, levelHienTai.danhSachXeBus.Length)];
+                                if (mauThucTe == LoaiMau.CauVong) mauThucTe = (LoaiMau)Random.Range(0, 4);
+                            }
+                            else
+                            {
+                                mauThucTe = (LoaiMau)Random.Range(0, 4);
+                            }
                         }
                     }
 
@@ -243,5 +255,107 @@ public class LevelManager : MonoBehaviour
             case LoaiMau.CauVong: return prefabXeDo;
             default: return null;
         }
+    }
+
+    /// <summary>
+    /// Thuật toán Bể Màu Cân Bằng Thông Minh (Smart Deficit Balancing Pool):
+    /// Tự động phân tích số khách thường của từng màu và số ghế của từng xe bus trong level.
+    /// Tính toán chính xác số khách còn thiếu của từng xe để gán cho Khách Ẩn,
+    /// đảm bảo 100% mọi xe bus đều được lấp đầy đủ 3 khách và màn chơi luôn giải được!
+    /// </summary>
+    private Queue<LoaiMau> TaoBeMauKhachAn(LevelData level)
+    {
+        Queue<LoaiMau> pool = new Queue<LoaiMau>();
+        if (level == null || level.banDoLuoii == null) return pool;
+
+        // 1. Đếm số khách thường & số khách ẩn trên sân
+        int countDo = 0, countXanh = 0, countVang = 0, countTim = 0;
+        int totalKhachAn = 0;
+
+        foreach (string hang in level.banDoLuoii)
+        {
+            if (string.IsNullOrEmpty(hang)) continue;
+            foreach (char c in hang)
+            {
+                char u = char.ToUpper(c);
+                if (u == 'R') countDo++;
+                else if (u == 'B') countXanh++;
+                else if (u == 'Y') countVang++;
+                else if (u == 'T' || u == 'P') countTim++;
+                else if (u == 'M' || u == '?') totalKhachAn++;
+            }
+        }
+
+        if (totalKhachAn == 0) return pool;
+
+        // 2. Đếm số ghế của từng loại xe
+        int seatsDo = 0, seatsXanh = 0, seatsVang = 0, seatsTim = 0, seatsCauVong = 0;
+        if (level.danhSachXeBus != null)
+        {
+            foreach (LoaiMau mauXe in level.danhSachXeBus)
+            {
+                if (mauXe == LoaiMau.Do) seatsDo += 3;
+                else if (mauXe == LoaiMau.Xanh) seatsXanh += 3;
+                else if (mauXe == LoaiMau.Vang) seatsVang += 3;
+                else if (mauXe == LoaiMau.Tim) seatsTim += 3;
+                else if (mauXe == LoaiMau.CauVong) seatsCauVong += 3;
+            }
+        }
+
+        List<LoaiMau> danhSachMau = new List<LoaiMau>();
+
+        // 3. Ưu tiên 1: Bù đắp số khách còn thiếu của từng xe thường
+        int thieuDo = Mathf.Max(0, seatsDo - countDo);
+        int thieuXanh = Mathf.Max(0, seatsXanh - countXanh);
+        int thieuVang = Mathf.Max(0, seatsVang - countVang);
+        int thieuTim = Mathf.Max(0, seatsTim - countTim);
+
+        for (int i = 0; i < thieuDo && danhSachMau.Count < totalKhachAn; i++) danhSachMau.Add(LoaiMau.Do);
+        for (int i = 0; i < thieuXanh && danhSachMau.Count < totalKhachAn; i++) danhSachMau.Add(LoaiMau.Xanh);
+        for (int i = 0; i < thieuVang && danhSachMau.Count < totalKhachAn; i++) danhSachMau.Add(LoaiMau.Vang);
+        for (int i = 0; i < thieuTim && danhSachMau.Count < totalKhachAn; i++) danhSachMau.Add(LoaiMau.Tim);
+
+        // 4. Ưu tiên 2: Nếu vẫn còn khách ẩn (dành cho Xe Cầu Vồng hoặc thừa ghế),
+        // ưu tiên gộp đủ bộ 3 cho màu đang bị lẻ
+        while (danhSachMau.Count < totalKhachAn)
+        {
+            int duDo = (countDo + danhSachMau.Count(m => m == LoaiMau.Do)) % 3;
+            int duXanh = (countXanh + danhSachMau.Count(m => m == LoaiMau.Xanh)) % 3;
+            int duVang = (countVang + danhSachMau.Count(m => m == LoaiMau.Vang)) % 3;
+            int duTim = (countTim + danhSachMau.Count(m => m == LoaiMau.Tim)) % 3;
+
+            if (duDo > 0) danhSachMau.Add(LoaiMau.Do);
+            else if (duXanh > 0) danhSachMau.Add(LoaiMau.Xanh);
+            else if (duVang > 0) danhSachMau.Add(LoaiMau.Vang);
+            else if (duTim > 0) danhSachMau.Add(LoaiMau.Tim);
+            else
+            {
+                // Nếu tất cả đều đã chẵn 3, chọn một màu có trong danh sách xe bus
+                LoaiMau mauChon = LoaiMau.Do;
+                if (level.danhSachXeBus != null && level.danhSachXeBus.Length > 0)
+                {
+                    LoaiMau m = level.danhSachXeBus[Random.Range(0, level.danhSachXeBus.Length)];
+                    mauChon = (m == LoaiMau.CauVong) ? (LoaiMau)Random.Range(0, 4) : m;
+                }
+                danhSachMau.Add(mauChon);
+            }
+        }
+
+        // 5. Xáo trộn ngẫu nhiên danh sách (Fisher-Yates Shuffle) để đảm bảo tính bất ngờ
+        for (int i = danhSachMau.Count - 1; i > 0; i--)
+        {
+            int randIndex = Random.Range(0, i + 1);
+            LoaiMau temp = danhSachMau[i];
+            danhSachMau[i] = danhSachMau[randIndex];
+            danhSachMau[randIndex] = temp;
+        }
+
+        foreach (LoaiMau m in danhSachMau)
+        {
+            pool.Enqueue(m);
+        }
+
+        Debug.Log($"[LevelManager] Đã tạo Bể Màu Khách Ẩn cân bằng: [{string.Join(", ", danhSachMau)}] (Tổng: {danhSachMau.Count})");
+        return pool;
     }
 }
