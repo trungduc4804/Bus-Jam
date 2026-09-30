@@ -11,8 +11,8 @@
 ---
 
 ## 🎮 Demo Trải Nghiệm Trực Tiếp
-* **Chơi trên Web (Itch.io):** [Link chơi thử WebGL](#) *(Cập nhật link của bạn tại đây)*
-* **Video Gameplay Preview:** [Xem video trên YouTube/Drive](#) *(Cập nhật link video)*
+* **Chơi trên Web (Itch.io):** [Link chơi thử WebGL](#) *(https://trungduc4804.itch.io/busjam3d)*
+* **Video Gameplay Preview:** [Xem video trên /Drive](#) *()*
 
 ---
 
@@ -114,7 +114,7 @@ Assets/
 ### Các Bước Thực Hiện:
 1. **Clone repository về máy:**
    ```bash
-   git clone https://github.com/your-username/bus-jam-3d.git
+   git clone https://github.com/trungduc4804/Bus-Jam.git
    ```
 2. **Mở dự án:**
    * Mở **Unity Hub** $\rightarrow$ Bấm **Add** $\rightarrow$ Chọn thư mục dự án vừa tải về.
