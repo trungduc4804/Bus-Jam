@@ -12,10 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2271ec77655f96247b951d4b0b24f758, type: 3}
   m_Name: Level_8
   m_EditorClassIdentifier: Assembly-CSharp::LevelData
-  soSlotHangCho: 4
-  danhSachXeBus: 0000000003000000040000000100000002000000
+  soSlotHangCho: 6
+  danhSachXeBus: 0000000001000000020000000300000000000000040000000100000000000000010000000200000003000000
   banDoLuoii:
-  - R T T R
-  - T B Y R
-  - B Y B Y
-  - M B Y 0
+  - R B Y T R B
+  - B R 0 B Y T
+  - T Y R 0 R B
+  - R B Y T B R
+  - Y T 0 R T Y
+  - R B Y T R B

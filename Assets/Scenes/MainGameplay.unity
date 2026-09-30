@@ -1775,7 +1775,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fc0b1999395135640800d00d596dd7c9, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5.2974195
+      value: 8.51
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fc0b1999395135640800d00d596dd7c9, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1783,7 +1783,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fc0b1999395135640800d00d596dd7c9, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -34.81671
+      value: -31.59
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: fc0b1999395135640800d00d596dd7c9, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1844,7 +1844,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a7a72878c965d2244a0791cdea6bc7be, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 4.9174194
+      value: 9.86
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a7a72878c965d2244a0791cdea6bc7be, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3118,6 +3118,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 0624ace79df89544d88d37aec33eda98, type: 2}
   - {fileID: 11400000, guid: 3281c3de27345224797c8a26fccd883d, type: 2}
   - {fileID: 11400000, guid: db3ae8e19fafd514abba884310959c3d, type: 2}
+  - {fileID: 11400000, guid: 62d12e6d8f9cad946a4087d2bb55d479, type: 2}
+  - {fileID: 11400000, guid: f2d195b68931f7a41a56ca9efd53a105, type: 2}
+  - {fileID: 11400000, guid: 5c573d19f8de2ad439cb033f909f5257, type: 2}
   prefabKhachDo: {fileID: 7178499479155883018, guid: a3dfe160284f2c94abedbdbdc61c2088, type: 3}
   prefabKhachXanh: {fileID: 3144171013425706699, guid: b178bae60075437459860b8216ade87f, type: 3}
   prefabKhachVang: {fileID: 7033429260709195021, guid: 936d691bcf0f9c04eb11cf44ecab25d5, type: 3}
@@ -3131,6 +3134,9 @@ MonoBehaviour:
   khoangCachO: 2
   viTriBatDau: {x: 0, y: 0, z: 0}
   tuDongCanGiua: 1
+  tuDongCanChinhCamera: 1
+  viTriCameraGoc: {x: 0, y: 20, z: -20}
+  fovCameraGoc: 50
 --- !u!4 &941898713 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 50e82b581d5ded44dbbc8f7cac5a4665, type: 3}
@@ -7112,7 +7118,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 70f360290ad519c499267717400327f8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -10.08258
+      value: -12
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 70f360290ad519c499267717400327f8, type: 3}
       propertyPath: m_LocalPosition.y
@@ -7120,7 +7126,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 70f360290ad519c499267717400327f8, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -34.64671
+      value: -27.5
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 70f360290ad519c499267717400327f8, type: 3}
       propertyPath: m_LocalRotation.w
