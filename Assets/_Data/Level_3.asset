@@ -15,6 +15,6 @@ MonoBehaviour:
   soSlotHangCho: 4
   danhSachXeBus: 010000000000000002000000
   banDoLuoii:
-  - R R R
-  - 'B B B '
-  - Y Y Y
+  - R B R
+  - B Y B
+  - Y R Y

@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Level_6
   m_EditorClassIdentifier: Assembly-CSharp::LevelData
   soSlotHangCho: 5
-  danhSachXeBus: 0000000003000000020000000100000002000000
+  danhSachXeBus: 02000000010000000000000001000000
   banDoLuoii:
-  - R T T T
-  - 0 R Y Y
-  - Y B R Y
-  - Y Y B B
+  - Y B B Y
+  - B R R B
+  - 0 M M 0
+  - 0 B B 0

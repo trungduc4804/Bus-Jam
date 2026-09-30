@@ -66,8 +66,8 @@ namespace BusJam.VFX
                 return;
             }
 
-            // Ghi nhớ vị trí ban đầu của Camera chính
-            if (Camera.main != null)
+            // Ghi nhớ vị trí ban đầu của Camera chính nếu chưa được thiết lập
+            if (viTriGocCamera == Vector3.zero && Camera.main != null)
             {
                 viTriGocCamera = Camera.main.transform.position;
             }
@@ -77,7 +77,8 @@ namespace BusJam.VFX
 
         private void Start()
         {
-            if (Camera.main != null)
+            // Giữ nguyên viTriGocCamera nếu LevelManager đã Auto-Fit
+            if (viTriGocCamera == Vector3.zero && Camera.main != null)
             {
                 viTriGocCamera = Camera.main.transform.position;
             }
@@ -445,6 +446,42 @@ namespace BusJam.VFX
         }
 
         /// <summary>
+        /// Cập nhật vị trí gốc mới của Camera khi đổi Level hoặc Auto-Fit Camera
+        /// </summary>
+        public void CapNhatViTriGocCamera(Vector3 viTriMoi)
+        {
+            viTriGocCamera = viTriMoi;
+            if (cameraShakeTweener != null && cameraShakeTweener.IsActive())
+            {
+                cameraShakeTweener.Kill();
+            }
+            if (Camera.main != null)
+            {
+                Camera.main.transform.position = viTriMoi;
+            }
+        }
+
+        /// <summary>
+        /// Lấy tọa độ gốc chuẩn của Camera cho màn chơi hiện tại (ưu tiên LevelManager Auto-Fit)
+        /// </summary>
+        public Vector3 LayViTriGocCamera()
+        {
+            if (LevelManager.Instance != null && LevelManager.Instance.ViTriCameraMucTieu != Vector3.zero)
+            {
+                return LevelManager.Instance.ViTriCameraMucTieu;
+            }
+            if (viTriGocCamera != Vector3.zero)
+            {
+                return viTriGocCamera;
+            }
+            if (Camera.main != null)
+            {
+                return Camera.main.transform.position;
+            }
+            return new Vector3(0f, 20f, -20f);
+        }
+
+        /// <summary>
         /// Rung nhẹ Camera chính và tự động hoàn trả về vị trí gốc chính xác 100%
         /// </summary>
         public void CameraShake(float duration = 0.2f, float strength = 0.1f)
@@ -452,22 +489,28 @@ namespace BusJam.VFX
             if (!batCameraShake || Camera.main == null) return;
 
             Camera cam = Camera.main;
-
-            if (viTriGocCamera == Vector3.zero)
-            {
-                viTriGocCamera = cam.transform.position;
-            }
+            Vector3 basePos = LayViTriGocCamera();
 
             if (cameraShakeTweener != null && cameraShakeTweener.IsActive())
             {
                 cameraShakeTweener.Kill();
-                cam.transform.position = viTriGocCamera;
+                cam.transform.position = basePos;
             }
+
+            // Đặt camera về basePos trước khi shake để không bị trôi tọa độ
+            cam.transform.position = basePos;
 
             cameraShakeTweener = cam.transform.DOShakePosition(duration, strength, 14, 90f, false, true)
                 .OnComplete(() =>
                 {
-                    if (cam != null) cam.transform.position = viTriGocCamera;
+                    if (cam != null)
+                    {
+                        cam.transform.position = LayViTriGocCamera();
+                        if (LevelManager.Instance != null && LevelManager.Instance.FovCameraMucTieu > 0)
+                        {
+                            cam.fieldOfView = LevelManager.Instance.FovCameraMucTieu;
+                        }
+                    }
                 });
         }
 

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using DG.Tweening;
 
 public class LevelManager : MonoBehaviour
 {
@@ -32,11 +33,26 @@ public class LevelManager : MonoBehaviour
     public Vector3 viTriBatDau = new Vector3(0, 0, 0); // Vị trí điểm trung tâm của lưới
     public bool tuDongCanGiua = true; // Tự động căn giữa lưới theo màn hình
 
+    [Header("Cài đặt Tự Động Cân Chỉnh Camera (Auto-Fit)")]
+    [Tooltip("Tự động điều chỉnh khoảng cách và góc nhìn Camera để vừa vặn với kích thước từng màn chơi")]
+    public bool tuDongCanChinhCamera = true;
+    [Tooltip("Vị trí Camera mặc định cho màn chơi tiêu chuẩn (5x5)")]
+    public Vector3 viTriCameraGoc = new Vector3(0f, 20f, -20f);
+    [Tooltip("FOV mặc định cho màn chơi tiêu chuẩn (5x5)")]
+    public float fovCameraGoc = 50f;
+
+    // Vị trí và FOV mục tiêu thực tế của Level hiện tại (các Manager khác luôn đọc để đồng bộ)
+    public Vector3 ViTriCameraMucTieu { get; private set; }
+    public float FovCameraMucTieu { get; private set; }
+
     // Hàng chờ lưu danh sách màu xe bus theo thứ tự trong LevelData
     private Queue<LoaiMau> hangChoXeBus = new Queue<LoaiMau>();
 
     private void Awake()
     {
+        ViTriCameraMucTieu = viTriCameraGoc;
+        FovCameraMucTieu = fovCameraGoc;
+
         if (Instance == null)
         {
             Instance = this;
@@ -186,6 +202,11 @@ public class LevelManager : MonoBehaviour
                     colIndex++;
                 }
             }
+            // 3.5 Tự động cân chỉnh Camera vừa vặn với kích thước lưới và khung hình thiết bị
+            if (tuDongCanChinhCamera)
+            {
+                CanChinhCameraTheoKichThuoc(maxCot, soHang);
+            }
         }
 
         // 4. Kích hoạt gọi chiếc xe bus đầu tiên tiến vào bến
@@ -193,6 +214,72 @@ public class LevelManager : MonoBehaviour
         {
             BenXe.Instance.GoiXeTiepTheo();
         }
+    }
+
+    /// <summary>
+    /// Tự động cân chỉnh Camera theo số cột và số hàng của Level,
+    /// đồng thời thích ứng linh hoạt với tỉ lệ màn hình của thiết bị di động (aspect ratio).
+    /// </summary>
+    public void CanChinhCameraTheoKichThuoc(int soCot, int soHang)
+    {
+        if (!tuDongCanChinhCamera) return;
+
+        Camera cam = Camera.main;
+        if (cam == null) return;
+
+        // Lưu lại vị trí và FOV Camera ban đầu nếu chưa từng được ghi nhận
+        if (viTriCameraGoc == Vector3.zero)
+        {
+            viTriCameraGoc = cam.transform.position;
+            fovCameraGoc = cam.fieldOfView;
+        }
+
+        // Tỉ lệ màn hình hiện tại (width / height)
+        float currentAspect = (float)Screen.width / Mathf.Max(1, Screen.height);
+        // Tỉ lệ chuẩn màn hình dọc 9:16 (~0.5625)
+        float refAspect = 9f / 16f;
+
+        // Hệ số bù trừ khi màn hình hẹp hơn chuẩn (ví dụ tỉ lệ dài 19.5:9 hay 20:9 trên các dòng iPhone/Android mới)
+        float aspectFactor = Mathf.Max(1f, refAspect / Mathf.Max(0.1f, currentAspect));
+
+        // Số cột và số hàng vượt quá mức chuẩn 5x5
+        float colExtra = Mathf.Max(0f, soCot - 5);
+        float rowExtra = Mathf.Max(0f, soHang - 5);
+
+        float fovOffset = 0f;
+        Vector3 posOffset = Vector3.zero;
+
+        if (colExtra > 0 || rowExtra > 0 || aspectFactor > 1.02f)
+        {
+            // Tăng FOV nhẹ nhàng (tối đa tăng thêm 8 độ để giữ phối cảnh đẹp, không bị méo góc rộng fish-eye)
+            fovOffset = Mathf.Min(8f, colExtra * 2.2f + (aspectFactor - 1f) * 7.5f);
+
+            // Lùi vị trí Camera ra xa theo hướng nhìn (Y nâng cao lên, Z lùi về âm hơn)
+            float pullBackY = colExtra * 1.8f + rowExtra * 0.8f + (aspectFactor - 1f) * 3.5f;
+            float pullBackZ = -(colExtra * 2.2f + rowExtra * 1.0f + (aspectFactor - 1f) * 4.2f);
+
+            posOffset = new Vector3(0f, pullBackY, pullBackZ);
+        }
+
+        Vector3 targetPos = viTriCameraGoc + posOffset;
+        float targetFOV = Mathf.Clamp(fovCameraGoc + fovOffset, 45f, 62f);
+
+        ViTriCameraMucTieu = targetPos;
+        FovCameraMucTieu = targetFOV;
+
+        // Dừng các tween cũ trên Camera và đặt ngay vị trí & góc nhìn chuẩn xác
+        cam.transform.DOKill();
+        cam.DOKill();
+        cam.transform.position = targetPos;
+        cam.fieldOfView = targetFOV;
+
+        // Cập nhật ngay vị trí gốc cho VFXManager để CameraShake không bao giờ bị giật về tọa độ cũ
+        if (BusJam.VFX.VFXManager.Instance != null)
+        {
+            BusJam.VFX.VFXManager.Instance.CapNhatViTriGocCamera(targetPos);
+        }
+
+        Debug.Log($"[LevelManager] Auto-Fit Camera cho Level ({soCot}x{soHang}, aspect={currentAspect:F2}): FOV={targetFOV:F1}, Pos={targetPos}");
     }
 
     // Xóa tất cả các xe bus hoặc nhân vật cũ kéo thả trong Scene Hierarchy trước khi chơi
