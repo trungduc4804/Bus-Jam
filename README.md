@@ -12,7 +12,7 @@
 
 ## 🎮 Demo Trải Nghiệm Trực Tiếp
 * **Chơi trên Web (Itch.io):** [Link chơi thử WebGL](https://trungduc4804.itch.io/busjam3d)
-* **Video Gameplay Preview:** [Xem video trên Drive](#) *(Link video sẽ được cập nhật sau)*
+* **Video Gameplay Preview:** [Xem video trên Drive](https://drive.google.com/file/d/1dSaCOF_3VnM0Lhjv2G1gEMTP3-hya3y9/view?usp=sharing)
 
 ---
 
