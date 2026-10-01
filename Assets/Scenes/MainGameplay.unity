@@ -3125,7 +3125,7 @@ MonoBehaviour:
   prefabKhachXanh: {fileID: 3144171013425706699, guid: b178bae60075437459860b8216ade87f, type: 3}
   prefabKhachVang: {fileID: 7033429260709195021, guid: 936d691bcf0f9c04eb11cf44ecab25d5, type: 3}
   prefabKhachTim: {fileID: 3144171013425706699, guid: 31fdaddc17bf8a449949b06d44856885, type: 3}
-  iconKhachAnTuyChinh: {fileID: 0}
+  iconKhachAnTuyChinh: {fileID: 21300000, guid: 28c20d53e571d14419ca2761b33b5926, type: 3}
   prefabXeDo: {fileID: 7055919804621877558, guid: 115f3782119d0524ba37116d61692242, type: 3}
   prefabXeXanh: {fileID: 8922093149485355826, guid: fb46c6b70694f394c8fc910619b8c86b, type: 3}
   prefabXeVang: {fileID: 1847469090080637540, guid: 6e6fdbcc14e4e1f4f90f4fbcb32e148c, type: 3}
@@ -5538,8 +5538,8 @@ Transform:
   m_GameObject: {fileID: 1577672787}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0, z: 38.9815}
-  m_LocalScale: {x: 4, y: 1, z: 12.491214}
+  m_LocalPosition: {x: 2.0504, y: 0, z: 13.0196}
+  m_LocalScale: {x: 3.59, y: 1, z: 7.298616}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}

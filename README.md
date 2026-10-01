@@ -11,7 +11,7 @@
 ---
 
 ## 🎮 Demo Trải Nghiệm Trực Tiếp
-* **Chơi trên Web (Itch.io):** [Link chơi thử WebGL](#) *(https://trungduc4804.itch.io/busjam3d)*   
+* **Chơi trên Web (Itch.io):** [Link chơi thử WebGL](https://trungduc4804.itch.io/busjam3d)
 * **Video Gameplay Preview:** [Xem video trên Drive](#) *(Link video sẽ được cập nhật sau)*
 
 ---
@@ -134,13 +134,3 @@ Assets/
 5. Bấm **Lưu Level** để lưu trực tiếp vào ScriptableObject.
 
 ---
-
-## 👤 Tác Giả & Liên Hệ
-
-* **Lập trình viên:** [Tên của bạn]
-* **Email:** [Email của bạn]
-* **LinkedIn:** [Link LinkedIn của bạn]
-* **Portfolio:** [Link Portfolio hoặc Itch.io]
-
----
-*Dự án được xây dựng với mục tiêu thể hiện năng lực lập trình Game Gameplay, Design Pattern, Custom Tooling và Tối ưu hóa hiệu năng trên nền tảng Unity.*
